@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: snowplow_attribution_campaign_attributions_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_campaign_attributions_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_campaign_attributions_expected_stg')
+          precision: 2
+          compare_columns:
+            - composite_key
+            - event_id
+            - customer_id
+            - cv_tstamp
+            - cv_total_revenue
+            - campaign_transformed_path
+            - campaign
+            - source_index
+            - path_length
+            - first_touch_attribution
+            - last_touch_attribution
+            - linear_attribution
+            - position_based_attribution
+
+  - name: snowplow_attribution_channel_attributions_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_channel_attributions_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_channel_attributions_expected_stg')
+          precision: 2
+          compare_columns:
+            - composite_key
+            - event_id
+            - customer_id
+            - cv_tstamp
+            - cv_total_revenue
+            - channel_transformed_path
+            - channel
+            - source_index
+            - path_length
+            - first_touch_attribution
+            - last_touch_attribution
+            - linear_attribution
+            - position_based_attribution
+
+  - name: snowplow_attribution_overview_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_overview_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_overview_expected_stg')
+          precision: 2
+  - name: snowplow_attribution_path_summary_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_path_summary_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_path_summary_expected_stg')
+          precision: 2
+  - name: snowplow_attribution_paths_to_conversion_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_paths_to_conversion_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_paths_to_conversion_expected_stg')
+          precision: 2
+          compare_columns:
+            - event_id
+            - customer_id
+            - cv_tstamp
+            - cv_path_start_tstamp
+            - revenue
+            - channel
+            - channel_transformed_path
+            - campaign
+            - campaign_transformed_path
+  - name: snowplow_attribution_paths_to_non_conversion_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attribution_paths_to_non_conversion_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attribution_paths_to_non_conversion_expected_stg')
+          precision: 2
+
+
