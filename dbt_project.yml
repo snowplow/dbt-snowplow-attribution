@@ -1,0 +1,52 @@
+
+name: 'snowplow_attribution'
+version: '0.1.0'
+config-version: 2
+
+require-dbt-version: [">=1.6.0", "<2.0.0"]
+
+profile: 'default'
+
+dispatch:
+  - macro_namespace: dbt
+    search_order: ['snowplow_utils', 'dbt']
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+docs-paths: ["docs"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+vars:
+  snowplow_attribution:
+    snowplow__conversion_hosts: ['a.com'] # url_hosts to consider
+    snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
+    snowplow__path_lookback_steps: 0 # Limit for the number of marketing channels to look at before the conversion (0 = unlimited)
+    snowplow__path_lookback_days: 30 # Restrict to marketing channels within this many days of the conversion (recommended: 30 / 14 / 7)
+    snowplow__consider_intrasession_channels: false # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels
+    snowplow__channels_to_exclude: [] # Channels to exclude before creating path summaries (and therefore excluded from attribution analysis), e.g. ['Direct']
+    snowplow__channels_to_include: [] # Optional filter on which channels to include when creating path summaries e.g. ['Direct']
+    snowplow__enable_paths_to_non_conversion: false
+    snowplow__conversion_stitching: false
+    snowplow_attribution_start_date: '2022-01-01'
+    snowplow__allow_refresh: false
+    snowplow__dev_target_name: dev
+
+    # Overwrite these source table vars in your own dbt_project.yml if not using these defaults:
+    snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_sessions')}}"
+    snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
+    snowplow__conversions_source_filter: 'cv_tstamp' # a timestamp field the conversion source field is partitioned on (ideally) for optimized filtering
+
+on-run-start: "{{ create_udfs() }}"
+
+models:
+  snowplow_attribution:
+    +schema: "derived"
+    +materialized: table

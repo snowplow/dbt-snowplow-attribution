@@ -1,0 +1,69 @@
+
+version: 2
+
+sources:
+  - name: atomic
+    schema: atomic
+    tables:
+      - name: events
+  - name: derived
+    schema:  "{{target.schema ~ '_derived'}}"
+    database: "{{ var('snowplow__database', target.database) if target.type not in ['databricks', 'spark'] else var('snowplow__databricks_catalog', 'hive_metastore') if target.type in ['databricks'] else var('snowplow__atomic_schema', 'atomic') }}"
+    tables:
+      - name: snowplow_unified_conversions
+        description: An incremental table which contains all relevant fields for unique conversion events.
+      - name: snowplow_unified_views 
+      - name: snowplow_unified_sessions
+
+models:
+  - name: snowplow_attribution_channel_counts
+    description: Number of sessions per channel, campaign, source and medium
+    columns:
+      - name: channel
+        description: Channel name
+      - name: campaign
+        description: Campaign name
+      - name: source
+        description: Source / referring host
+      - name: medium
+        description: Marketing medium
+      - name: number_of_sessions
+        description: Count of sessions per channel / campaign / source / medium
+
+  - name: snowplow_attribution_path_summary
+    description: For each unique path, a summary of associated conversions, non conversions and revenue
+    columns:
+      - name: transformed_path
+        description: "> delimited path summary"
+      - name: conversions
+        description: Count of conversions for this path
+      - name: non_conversions
+        description: Count of non-conversions for path
+      - name: revenue
+        description: Revenue for the given path
+      - name: direct_display_other_organic_search_paid_search_referral
+        description: These columns may be created dynamically
+
+  - name: snowplow_attribution_paths_to_conversion
+    description: Customer id and the the paths the customer has followed that have lead to conversion
+    columns:
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: conversionTimestamp
+        description: UTC timestamp for the conversion event
+      - name: revenue
+        description: Revenue associated with the conversion
+      - name: path
+        description: Path to conversion (> delimited)
+      - name: transformed_path
+        description: Transformations applied to "path" above
+
+  - name: snowplow_attribution_paths_to_non_conversion
+    description: Customer id and the the paths the customer has followed that have not lead to conversion
+    columns:
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: path
+        description: Path to conversion (> delimited)
+      - name: transformed_path
+        description: Transformations applied to "path" above

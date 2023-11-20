@@ -1,0 +1,4 @@
+packages:
+  - local: ../
+  - git: https://github.com/snowplow/dbt-snowplow-unified.git
+    revision: feature/conversions
