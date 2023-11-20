@@ -1,0 +1,7 @@
+event_id,customer_id,cv_tstamp,cv_path_start_tstamp,revenue,channel_path,channel_transformed_path,campaign_path,campaign_transformed_path
+"9f80548b-5bb3-4d21-b78e-503ae6f8205e",f000170187170673177,2023-06-08 21:18:32.000+00:00,2023-05-09 21:18:32.000+00:00,50.00,Direct > Direct,Direct,Campaign 1 > Campaign 1,Campaign 1
+f9e6fa53-61f4-45f4-adb1-b75e018f8a32,f0009028775170427694,2023-06-11 16:33:03.000+00:00,2023-05-12 16:33:03.000+00:00,20.42,Direct,Direct,Campaign 1,Campaign 1
+c3bf5de5-20c7-42d6-9543-afd9ecf133f5,f0008284662789123943,2023-07-07 14:05:55.000+00:00,2023-06-07 14:05:55.000+00:00,200.00,Video,Video,Campaign 1,Campaign 1
+"1487c09f-f17f-4c76-990e-55c46f8f621c",f0006911334202687206,2023-07-19 05:27:51.000+00:00,2023-06-19 05:27:51.000+00:00,66.50,Display_Other > Organic_Search > Organic_Search,Display_Other > Organic_Search,Campaign 2 > Campaign 2 > Campaign 2,Campaign 2
+d16ac635-6d43-4ba0-b25a-b988f773fbd7,f0006148050225777094,2023-07-25 08:52:34.000+00:00,2023-06-25 08:52:34.000+00:00,140.00,Direct > Organic_Search > Organic_Search > Direct,Direct > Organic_Search > Direct,Campaign 2 > Campaign 2 > Campaign 1 > Campaign 1,Campaign 2 > Campaign 1
+"33a90c49-366b-4d9d-ba97-d427b22f881c",f0005094333993051683,2023-07-30 12:55:24.000+00:00,2023-06-30 12:55:24.000+00:00,24.00,Direct > Direct,Direct,Campaign 1 > Campaign 1,Campaign 1

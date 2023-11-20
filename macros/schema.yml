@@ -1,0 +1,45 @@
+version: 2
+
+macros:
+  - name: channel_classification
+    description: '{{ doc("macro_channel_classification") }}'
+  - name: create_udfs
+    description: '{{ doc("macro_create_udfs") }}'
+  - name: attribution_overview
+    description: '{{ doc("macro_attribution_overview") }}'
+  - name: source_checks
+    description: '{{ doc("macro_source_checks") }}'
+  - name: path_transformation
+    description: '{{ doc("macro_path_transformation") }}'
+    arguments:
+      - name: transformation_type
+        type: string
+        description: >
+          A type of transformation that needs to be executed E.g. 'unique_path'.
+          Needs to be one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path
+          More details here https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-models/dbt-attribution-data-model/#path-transform-options
+      - name: transform_param
+        type: string
+        description: (Optional) The parameter value that the path transormation needs to execute,. Default none
+  - name: transform_paths
+    description: '{{ doc("macro_transform_paths") }}'
+    arguments:
+      - name: model_type
+        type: string
+        description: The macro only expects 'conversions' in case it runs in the path_to_conversions in which case it adds more fields
+      - name: source_cte
+        type: string
+        description: The name of the cte to take as an input for the macro the build sql to
+  - name: trim_long_path
+    description: '{{ doc("macro_trim_long_path") }}'
+    arguments:
+      - name: array_column
+        type: string
+        description: The array column to be transformed
+      - name: lookback_steps
+        type: integer
+        description: Defaulted to be taken from the snowplow__path_lookback_steps, the number of path to leave starting from the end
+  - name: allow_refresh
+    description: '{{ doc("macro_allow_refresh") }}'
+  - name: paths_to_conversion
+    description: '{{ doc("macro_paths_to_conversion") }}'

@@ -1,0 +1,19 @@
+path_type,transformed_path,conversions,non_conversions,revenue
+campaign,Campaign 1,4,56,294.42
+campaign,Campaign 2 > Campaign 1,1,0,140.00
+campaign,Campaign 2,1,1,66.50
+campaign,AW - Accessories,0,1,
+campaign,Campaign 1 > AW - Accessories,0,1,
+campaign,Campaign 3 > AW - Dynamic Search Ads Whole Site,0,1,
+campaign,Data Share Promo,0,1,
+channel,Direct,3,25,94.42
+channel,Video,1,2,200.00
+channel,Display_Other > Organic_Search,1,0,66.50
+channel,Direct > Organic_Search > Direct,1,0,140.00
+channel,Referral,0,2,
+channel,Paid_Search_Other,0,1,
+channel,Organic_Search > Paid_Search_Other,0,2,
+channel,Organic_Search > Direct,0,1,
+channel,Unmatched_Channel,0,1,
+channel,Referral > Direct,0,1,
+channel,Organic_Search,0,26,
