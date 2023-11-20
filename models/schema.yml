@@ -1,0 +1,154 @@
+
+version: 2
+
+sources:
+  - name: atomic
+    schema: atomic
+    tables:
+      - name: events
+  - name: derived
+    schema:  "{{target.schema ~ '_derived'}}"
+    database: "{{ var('snowplow__database', target.database) if target.type not in ['databricks', 'spark'] else var('snowplow__databricks_catalog', 'hive_metastore') if target.type in ['databricks'] else var('snowplow__atomic_schema', 'atomic') }}"
+    tables:
+      - name: snowplow_unified_conversions
+        description: An incremental table which contains all relevant fields for unique conversion events.
+      - name: snowplow_unified_views 
+      - name: snowplow_unified_sessions
+
+models:
+  - name: snowplow_attribution_path_summary
+    description: For each unique path, a summary of associated conversions, non conversions and revenue
+    columns:
+      - name: path_type
+        description: Type of path - channel or campaign
+      - name: transformed_path
+        description: "> delimited path summary"
+      - name: conversions
+        description: Count of conversions for this path
+      - name: non_conversions
+        description: Count of non-conversions for path
+      - name: revenue
+        description: Revenue associated with the conversion
+
+  - name: snowplow_attribution_paths_to_conversion
+    description: Customer id and the the paths the customer has followed that have lead to conversion
+    columns:
+      - name: event_id
+        description: Conversion event_id
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
+      - name: cv_path_start_tstamp
+        description: Timestamp of the conversion event - path_lookback_days variable denoting the minimum start_tstamp of the visit prior to conversion
+      - name: revenue
+        description: Revenue associated with the conversion
+      - name: channel_path
+        description: Channel path to conversion (> delimited)
+      - name: channel_transformed_path
+        description: Transformations applied to "path" above
+      - name: campaign_path
+        description: Campaign path to conversion (> delimited)
+      - name: campaign_transformed_path
+        description: Transformations applied to "path" above
+
+  - name: snowplow_attribution_paths_to_non_conversion
+    description: Customer id and the the paths the customer has followed that have not lead to conversion
+    columns:
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: channel_path
+        description: Channel path to non-conversion (> delimited)
+      - name: channel_transformed_path
+        description: Transformations applied to "path" above
+      - name: campaign_path
+        description: Campaign path to non-conversion (> delimited)
+      - name: campaign_transformed_path
+        description: Transformations applied to "path" above
+
+  - name: snowplow_attribution_campaign_attributions
+    description: By campaign path and conversion level incremental table that attributes the conversion value based on various algorythms
+    columns:
+      - name: composite_key
+        description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search) + source_index
+      - name: event_id
+        description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
+      - name: cv_total_revenue
+        description: Revenue associated with the conversion
+      - name: campaign_transformed_path
+        description: The transformed path leading to conversion taken into account for the attribution analysis
+      - name: campaign
+        description: Each campaign flattened from campaign_transformed_path that lead to a conversion
+      - name: source_index
+        description: The index which denotes the path order from first to last before conversion starting from 0
+      - name: path_length
+        description: The count of steps in the transformed path leading to a conversion.
+      - name: first_touch_attribution
+        description: The revenue attribution value for a given path with first_touch attribution logic applied, meaning that the first touch-point will get all the attribution. 
+      - name: last_touch_attribution
+        description: The revenue attribution value for a given path with last_touch attribution logic applied, meaning that the last touch-point will get all the attribution.
+      - name: linear_attribution
+        description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
+      - name: position_based_attribution
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
+
+  - name: snowplow_attribution_channel_attributions
+    description: By channel path and conversion level incremental table that attributes the conversion value based on various algorythms
+    columns:
+      - name: composite_key
+        description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search) + source_index
+      - name: event_id
+        description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
+      - name: cv_total_revenue
+        description: Revenue associated with the conversion
+      - name: cannel_transformed_path
+        description: The transformed path leading to conversion taken into account for the attribution analysis
+      - name: channel
+        description: Each channel flattened from channel_transformed_path that lead to a conversion
+      - name: source_index
+        description: The index which denotes the path order from first to last before conversion starting from 0
+      - name: path_length
+        description: The count of steps in the transformed path leading to a conversion.
+      - name: first_touch_attribution
+        description: The revenue attribution value for a given path with first_touch attribution logic applied, meaning that the first touch-point will get all the attribution. 
+      - name: last_touch_attribution
+        description: The revenue attribution value for a given path with last_touch attribution logic applied, meaning that the last touch-point will get all the attribution.
+      - name: linear_attribution
+        description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
+      - name: position_based_attribution
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
+
+  - name: snowplow_attribution_overview
+    description: The user defined report view (potenitally showing ROIs)
+    columns:
+      - name: path_type
+        description: Type of path - channel or campaign
+      - name: attribution_type
+        description: Type of attribution (e.g. first touch)
+      - name: touch_point
+        description: The type of channel or campaign to calculate the ROI and attribution
+      - name: steps
+        description: The total number a touch_point appeared as indivisual steps forming part of the paths leading to conversions
+      - name: n_conversions
+        description: The number of conversions
+      - name: min_cv_tstamp
+        description: The first conversion timestamp within the report period
+      - name: max_cv_tstamp
+        description: The last conversion timestamp within the report period
+      - name: spend
+        description: The marketing spend
+      - name: sum_cv_total_revenue
+        description: Revenue associated with the conversion for all conversions where the given touch_point is included
+      - name: attributed_revenue
+        description: Revenue attributed to the touch-point
+      - name: ROAS
+        description: Return on advertising spend
+      
