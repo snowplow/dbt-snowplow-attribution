@@ -50,3 +50,5 @@ models:
   snowplow_attribution:
     +schema: "derived"
     +materialized: table
+    manifest:
+      +schema: "snowplow_manifest"
