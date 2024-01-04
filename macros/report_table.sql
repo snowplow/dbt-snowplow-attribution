@@ -37,7 +37,7 @@ with spends as (
     
   from spends s
   
-  left join {{ target.schema ~ '_derived.snowplow_attribution_channel_attributions'}} c
+  left join {{ ref('_derived.snowplow_attribution_channel_attributions') }} c
   
   on c.channel_path = s.channel and s.spend_date < c.cv_tstamp 
   and {{ dbt.dateadd('day', 90, 'spend_date') }} > c.cv_tstamp
