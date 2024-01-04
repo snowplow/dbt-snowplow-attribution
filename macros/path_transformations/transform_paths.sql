@@ -178,7 +178,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
       channel_transformed_path,
       {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
-      champaign_transformed_path
+      campaign_transformed_path
 
   -- the last cte will always equal to the total transformations unless there is no item there
   {% if total_transformations > 0 %}
