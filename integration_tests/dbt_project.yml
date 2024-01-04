@@ -61,6 +61,7 @@ vars:
     snowplow__path_transforms:  {'exposure_path': null}
     snowplow__consider_intrasession_channels: false
     snowplow__channels_to_exclude: ['fake_channel']
+    snowplow_attribution_start_date: '2022-01-01'
     
 
 seeds:
