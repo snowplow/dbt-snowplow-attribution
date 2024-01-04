@@ -19,16 +19,12 @@ models:
   - name: snowplow_attribution_channel_counts
     description: Number of sessions per channel, campaign, source and medium
     columns:
-      - name: channel
-        description: Channel name
-      - name: campaign
-        description: Campaign name
-      - name: source
-        description: Source / referring host
-      - name: medium
-        description: Marketing medium
+      - name: path type
+        description: Type of path - channel or campaign
+      - name: path
+        description: Channel or campaign name
       - name: number_of_sessions
-        description: Count of sessions per channel / campaign / source / medium
+        description: Count of sessions per channel / campaign
 
   - name: snowplow_attribution_path_summary
     description: For each unique path, a summary of associated conversions, non conversions and revenue
@@ -40,7 +36,7 @@ models:
       - name: non_conversions
         description: Count of non-conversions for path
       - name: revenue
-        description: Revenue for the given path
+        description: Revenue associated with the conversion
       - name: direct_display_other_organic_search_paid_search_referral
         description: These columns may be created dynamically
 
@@ -49,8 +45,8 @@ models:
     columns:
       - name: customer_id
         description: Id for the customer (identified or cookie)
-      - name: conversionTimestamp
-        description: UTC timestamp for the conversion event
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
       - name: revenue
         description: Revenue associated with the conversion
       - name: path
@@ -67,3 +63,94 @@ models:
         description: Path to conversion (> delimited)
       - name: transformed_path
         description: Transformations applied to "path" above
+
+  - name: snowplow_attribution_campaign_attributions
+    description: 
+    columns:
+      - name: composite_key
+        description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search)
+      - name: event_id
+        description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
+      - name: revenue
+        description: Revenue associated with the conversion
+      - name: campaign_path
+        description: Each path flattened from campaign_transformed_path that lead to a conversion
+      - name: source_index
+        description: The index which denotes the path order from first to last before conversion starting from 0
+      - name: first_touch_attribution
+        description: The revenue attribution value for a given path with first_touch attribution logic applied, meaning that the first touch-point will get all the attribution. 
+      - name: last_touch_attribution
+        description: The revenue attribution value for a given path with last_touch attribution logic applied, meaning that the last touch-point will get all the attribution.
+      - name: linear_attribution
+        description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
+      - name: position_based_attribution
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%.
+
+  - name: snowplow_attribution_channel_attributions
+    description: 
+    columns:
+      - name: composite_key
+        description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search)
+      - name: event_id
+        description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
+      - name: customer_id
+        description: Id for the customer (identified or cookie)
+      - name: cv_tstamp
+        description: The derived_tstamp of the conversion event
+      - name: revenue
+        description: Revenue associated with the conversion
+      - name: channel_path
+        description: Each path flattened from channel_transformed_path that lead to a conversion
+      - name: source_index
+        description: The index which denotes the path order from first to last before conversion starting from 0
+      - name: first_touch_attribution
+        description: The revenue attribution value for a given path with first_touch attribution logic applied, meaning that the first touch-point will get all the attribution. 
+      - name: last_touch_attribution
+        description: The revenue attribution value for a given path with last_touch attribution logic applied, meaning that the last touch-point will get all the attribution.
+      - name: linear_attribution
+        description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
+      - name: position_based_attribution
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%.
+
+- name: snowplow_attribution_incremental_manifest
+  description: The manifest table to keep record of past run details for the paths_to_conversion table's incremental logic
+  columns:
+    - name: model
+      description: The dbt model tracked
+    - name: processed_at
+      description: The timestamp when the model was processed
+    - name: conversion_hosts
+      description: The conversion hosts taken into account for the model
+    - name: path_transforms
+      description: The path transforms applied for a given run
+    - name: path_lookback_steps
+      description: The potential limitation on the path length applied for a given run
+    - name: path_lookback_days
+      description: The number of days the paths were taken into account before conversion for a given run
+    - name: consider_intrasession_channels
+      description: Boolean. In Google Analytics (Universal Analytics) a new session is started if a campaign source changes (referrer of campaign tagged URL). Snowplow utilizes activity based sessionization, rather than campaign based sessionization. Setting `consider_intrasession_channels` to `false` will take only the campaign information from the first page view in a given Snowplow session, and not give credit to other channels in the converting session if they occur after the initial page view
+    - name: channels_to_exclude
+      description: Optional list of channels excluded from the analysis.
+    - name: channels_to_include
+      description: Optional list of channels to filter on.
+    - name: last_processed_cv_tstamp
+      description: The timestamp of the last conversion event processed by the model
+
+- name: report_table
+  description: The user defined report table to calculate ROIs
+  columns:
+    - name: channel
+      description: The typo of channel to calculate the ROI and attribution for
+    - name: conversions
+      description: The number of conversions
+    - name: revenue
+      description: Revenue associated with the conversion
+    - name: spend
+      description: The marketing spend
+    - name: ROAS
+      description: Return on advertising spend
+    

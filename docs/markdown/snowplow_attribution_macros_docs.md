@@ -38,42 +38,6 @@ select {{ channel_classification() }} as channel,
 {% endraw %}
 {% enddocs %}
 
-{% docs macro_channel_spend %}
-
-{% raw %}
- A macro for the user to overwrite it with a sql script to extract total ad spend by channel.
-
- -- Example (simplified) query:
-
-  select
-    channel,
-    sum(spend_usd) as spend
-  from example_spend_table
-  group by 1
-
-  -- Example table output for the user-supplied SQL:
-
-  Channel     |  Spend
- ------------------------
-  direct      |  1050.02
-  paid_search |  10490.11
-  etc...
-
-#### Returns
-
-A sql script to extract channel and corresponding spend values from a data source.
-
-
-#### Usage
-
-```sql
-
-{{ channel_spend() }}
-
-```
-{% endraw %}
-{% enddocs %}
-
 
 {% docs macro_conversion_clause %}
 
@@ -112,7 +76,6 @@ select {{ conversion_value() }} as revenue
 ```
 {% endraw %}
 {% enddocs %}
-
 
 
 {% docs macro_create_udfs %}
@@ -249,3 +212,12 @@ from
 {% enddocs %}
 
 
+{% docs macro_allow_refresh %}
+{% raw %}
+This macro is used to determine if a full-refresh is allowed (depending on the environment), using the `snowplow__allow_refresh` variable.
+
+#### Returns
+`snowplow__allow_refresh` if environment is not `dev`, `none` otherwise.
+
+{% endraw %}
+{% enddocs %}
