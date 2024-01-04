@@ -102,7 +102,7 @@ with paths as (
 
   from {{ var('snowplow__conversions_source' )}} as ev
 
-  where 1 = 1
+  where ( {{ conversion_clause() }} )
 
   {% if is_incremental() %}
     {% if target.type in ['databricks', 'spark'] -%}
@@ -110,9 +110,7 @@ with paths as (
     {% else %}
       and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
     {% endif %}
-  {% endif %}
-
-  and {{ conversion_clause() }}
+  {% endif %} 
 
 )
 
@@ -150,7 +148,7 @@ with paths as (
     and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
   {% endif %}
   
-  group by 1,2,3,4,5 {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}
+  group by {{ dbt_utils.group_by(n=5) }} {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}
 )
 
  {% if target.type not in ('redshift') %}
