@@ -26,8 +26,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 vars:
   snowplow_attribution:
-    snowplow__conversion_hosts: ['a.com'] # url_hosts to consider
-    snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
+    snowplow__conversion_hosts: [] # Url_hosts to consider, when left empty (default) it considers all
+    snowplow__path_transforms: {'expsure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
     snowplow__path_lookback_steps: 0 # Limit for the number of marketing channels to look at before the conversion (0 = unlimited)
     snowplow__path_lookback_days: 30 # Restrict to marketing channels within this many days of the conversion (recommended: 30 / 14 / 7)
     snowplow__consider_intrasession_channels: false # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels

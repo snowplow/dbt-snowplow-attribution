@@ -15,17 +15,63 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 -- Requires macro trim_long_path
 
+with paths as (
+  
+  select
+    {% if var('snowplow__conversion_stitching') %}
+      stitched_user_id as customer_id,
+    {% else %}
+      case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
+        else p.user_identifier end as customer_id,
+    {% endif %}
+    start_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
+    {{ channel_classification() }} as channel,
+    refr_urlpath as referral_path,
+    mkt_campaign as campaign,
+    mkt_source as source,
+    mkt_medium as medium
 
-with non_conversions as (
+    {% if target.type in ['databricks', 'spark'] -%}
+      , date(start_tstamp) as visit_start_date
+    {%- endif %}
+
+  from {{ var('snowplow__conversion_path_source') }} p
+
+  where start_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
+
+  {% if var('snowplow__conversion_hosts')|length > 0}
+    -- restrict to certain hostnames
+    and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
+  {% endif %}
+
+  {% if var('snowplow__consider_intrasession_channels') %}
+    -- yields one row per channel change
+    and mkt_medium is not null and mkt_medium != ''
+  {% endif %}
+
+)
+
+, non_conversions as (
 
   select
     customer_id,
     max(start_tstamp) as non_cv_tstamp
 
-  from {{ var('snowplow_path_source') }} s
+  from paths s
 
   where not exists (select customer_id from {{ ref('snowplow_attribution_conversions') }} c where s.customer_id = c.customer_id)
   and start_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
+  
+  {% if var('snowplow__channels_to_exclude') %}
+    -- Filters out any unwanted channels
+    and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+  {% endif %}
+
+  {% if var('snowplow__channels_to_include') %}
+    -- Filters out any unwanted channels
+    and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+  {% endif %}
+  
 
   group by 1
 

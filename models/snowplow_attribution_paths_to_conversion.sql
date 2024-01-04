@@ -67,9 +67,11 @@ with paths as (
     {% endif %}
   {% endif %}
 
-  -- restrict to certain hostnames
-  and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
-
+  {% if var('snowplow__conversion_hosts')|length > 0}
+    -- restrict to certain hostnames
+    and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
+  {% endif %}
+  
   {% if var('snowplow__consider_intrasession_channels') %}
     -- yields one row per channel change
     and mkt_medium is not null and mkt_medium != ''
@@ -137,6 +139,16 @@ with paths as (
   and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }}  >= 0
   
   where 1 = 1
+  
+  {% if var('snowplow__channels_to_exclude') %}
+    -- Filters out any unwanted channels
+    and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+  {% endif %}
+
+  {% if var('snowplow__channels_to_include') %}
+    -- Filters out any unwanted channels
+    and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+  {% endif %}
   
   group by 1,2,3,4,5 {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}
 )
