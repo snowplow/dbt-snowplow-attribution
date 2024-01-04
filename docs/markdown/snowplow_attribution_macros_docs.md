@@ -44,6 +44,11 @@ select {{ channel_classification() }} as channel,
 {% raw %}
 A macro to let users specify how to filter on conversion events.
 
+Example:
+```sql
+    cv_value > 0
+```
+
 #### Returns
 
 A sql to be used in a WHERE clause to filter on conversion events.
@@ -62,6 +67,11 @@ where {{ conversion_clause() }}
 
 {% raw %}
 A user defined macro that specifies either a single column or a calculated value that represents the value associated with the conversion.
+
+Example:
+```sql
+    ev.cv_value
+```
 
 #### Returns
 
