@@ -180,12 +180,12 @@ select
   cv_tstamp,
   cv_path_start_tstamp,
   revenue,
-  {{ snowplow_utils.get_array_to_string('channel_path', 'p', ' > ') }} as channel_path,
-  {{ snowplow_utils.get_array_to_string('channel_transformed_path', 'p', ' > ') }} as channel_transformed_path,
-  {{ snowplow_utils.get_array_to_string('campaign_path', 'p', ' > ') }} as campaign_path,
-  {{ snowplow_utils.get_array_to_string('campaign_transformed_path', 'p', ' > ') }} as campaign_transformed_path
+  {{ snowplow_utils.get_array_to_string('channel_path', 't', ' > ') }} as channel_path,
+  {{ snowplow_utils.get_array_to_string('channel_transformed_path', 't', ' > ') }} as channel_transformed_path,
+  {{ snowplow_utils.get_array_to_string('campaign_path', 't', ' > ') }} as campaign_path,
+  {{ snowplow_utils.get_array_to_string('campaign_transformed_path', 't', ' > ') }} as campaign_transformed_path
 
-from path_transforms p
+from path_transforms t
 
 {% else %}
 
