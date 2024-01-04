@@ -57,7 +57,7 @@ with paths as (
 
   from {{ var('snowplow__conversion_path_source') }} p
 
-  where start_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
+  where start_tstamp >= date '{{ var("snowplow_attribution_start_date") }}'
 
   {% if is_incremental() %}
     {% if target.type in ['databricks', 'spark'] -%}
