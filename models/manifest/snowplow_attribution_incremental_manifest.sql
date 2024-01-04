@@ -32,7 +32,7 @@ with prep as (
   
   select
     'paths_to_conversion' as model,
-    {{ dbt.current_timestamp() }} as processed_at,
+    {{ snowplow_utils.current_timestamp_in_utc() }} as processed_at,
     {{ var("snowplow__conversion_hosts") }} as conversion_hosts,
     
     {% for path_transform_name, _ in var('snowplow__path_transforms').items() %}
