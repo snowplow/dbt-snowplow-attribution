@@ -68,7 +68,7 @@ models:
     description: 
     columns:
       - name: composite_key
-        description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search)
+        description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search) + source_index
       - name: event_id
         description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
       - name: customer_id
@@ -94,7 +94,7 @@ models:
     description: 
     columns:
       - name: composite_key
-        description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search)
+        description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search) + source_index
       - name: event_id
         description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
       - name: customer_id

@@ -78,7 +78,7 @@ on a.event_id = u.event_id
 )
 
 select
-  event_id || channel_path as composite_key,
+  event_id || channel_path|| source_index as composite_key,
   event_id,
   customer_id,
   cv_tstamp,
