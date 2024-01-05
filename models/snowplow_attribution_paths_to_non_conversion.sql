@@ -39,7 +39,7 @@ with paths as (
 
   where start_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
 
-  {% if var('snowplow__conversion_hosts')|length > 0}
+  {% if var('snowplow__conversion_hosts')|length > 0 %}
     -- restrict to certain hostnames
     and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
   {% endif %}

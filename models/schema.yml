@@ -65,7 +65,7 @@ models:
         description: Transformations applied to "path" above
 
   - name: snowplow_attribution_campaign_attributions
-    description: 
+    description: By campaign path and conversion level incremental table that attributes the conversion value based on various algorythms
     columns:
       - name: composite_key
         description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search) + source_index
@@ -88,10 +88,10 @@ models:
       - name: linear_attribution
         description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
       - name: position_based_attribution
-        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%.
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
   - name: snowplow_attribution_channel_attributions
-    description: 
+    description: By channel path and conversion level incremental table that attributes the conversion value based on various algorythms
     columns:
       - name: composite_key
         description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search) + source_index
@@ -114,43 +114,21 @@ models:
       - name: linear_attribution
         description: The revenue attribution value for a given path with linear attribution logic applied, meaning that the revenue is split equally among all the touch-points.
       - name: position_based_attribution
-        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%.
+        description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
-- name: snowplow_attribution_incremental_manifest
-  description: The manifest table to keep record of past run details for the paths_to_conversion table's incremental logic
-  columns:
-    - name: model
-      description: The dbt model tracked
-    - name: processed_at
-      description: The timestamp when the model was processed
-    - name: conversion_hosts
-      description: The conversion hosts taken into account for the model
-    - name: path_transforms
-      description: The path transforms applied for a given run
-    - name: path_lookback_steps
-      description: The potential limitation on the path length applied for a given run
-    - name: path_lookback_days
-      description: The number of days the paths were taken into account before conversion for a given run
-    - name: consider_intrasession_channels
-      description: Boolean. In Google Analytics (Universal Analytics) a new session is started if a campaign source changes (referrer of campaign tagged URL). Snowplow utilizes activity based sessionization, rather than campaign based sessionization. Setting `consider_intrasession_channels` to `false` will take only the campaign information from the first page view in a given Snowplow session, and not give credit to other channels in the converting session if they occur after the initial page view
-    - name: channels_to_exclude
-      description: Optional list of channels excluded from the analysis.
-    - name: channels_to_include
-      description: Optional list of channels to filter on.
-    - name: last_processed_cv_tstamp
-      description: The timestamp of the last conversion event processed by the model
-
-- name: report_table
-  description: The user defined report table to calculate ROIs
-  columns:
-    - name: channel
-      description: The typo of channel to calculate the ROI and attribution for
-    - name: conversions
-      description: The number of conversions
-    - name: revenue
-      description: Revenue associated with the conversion
-    - name: spend
-      description: The marketing spend
-    - name: ROAS
-      description: Return on advertising spend
-    
+  - name: report_table
+    description: The user defined report table to calculate ROIs
+    columns:
+      - name: path_type
+        description: Type of path - channel or campaign
+      - name: path
+        description: The type of channel or campaign to calculate the ROI and attribution for
+      - name: conversions
+        description: The number of conversions
+      - name: revenue
+        description: Revenue associated with the conversion
+      - name: spend
+        description: The marketing spend
+      - name: ROAS
+        description: Return on advertising spend
+      

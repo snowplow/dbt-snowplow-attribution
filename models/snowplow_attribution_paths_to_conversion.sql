@@ -67,7 +67,7 @@ with paths as (
     {% endif %}
   {% endif %}
 
-  {% if var('snowplow__conversion_hosts')|length > 0}
+  {% if var('snowplow__conversion_hosts')|length > 0 %}
     -- restrict to certain hostnames
     and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
   {% endif %}
@@ -148,7 +148,7 @@ with paths as (
     and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
   {% endif %}
   
-  group by {{ dbt_utils.group_by(n=5) }} {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}
+  {{ dbt_utils.group_by(n=5) }} {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}
 )
 
  {% if target.type not in ('redshift') %}

@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: snowplow_attribution_incremental_manifest
+    description: The manifest table to keep record of past run details for the paths_to_conversion table's incremental logic
+    columns:
+      - name: model
+        description: The dbt model tracked
+      - name: processed_at
+        description: The timestamp when the model was processed
+      - name: conversion_hosts
+        description: The conversion hosts taken into account for the model
+      - name: path_transforms
+        description: The path transforms applied for a given run
+      - name: path_lookback_steps
+        description: The potential limitation on the path length applied for a given run
+      - name: path_lookback_days
+        description: The number of days the paths were taken into account before conversion for a given run
+      - name: consider_intrasession_channels
+        description: Boolean. In Google Analytics (Universal Analytics) a new session is started if a campaign source changes (referrer of campaign tagged URL). Snowplow utilizes activity based sessionization, rather than campaign based sessionization. Setting `consider_intrasession_channels` to `false` will take only the campaign information from the first page view in a given Snowplow session, and not give credit to other channels in the converting session if they occur after the initial page view
+      - name: channels_to_exclude
+        description: Optional list of channels excluded from the analysis
+      - name: channels_to_include
+        description: Optional list of channels to filter on
+      - name: last_processed_cv_tstamp
+        description: The timestamp of the last conversion event processed by the model

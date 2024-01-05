@@ -5,56 +5,47 @@
 
 {% macro default__report_table() %}
 
-with spends as (
-
-    select
-      '2022-06-01' as spend_date,
-      'Direct' as channel,
-      100000 as spend
-      
-    union all
-    
-    select
-      '2022-06-01',
-      'Organic_Search' as channel,
-      100000 as spend
-      
-    union all
-    
-    select
-      '2022-06-01',
-      'Video' as channel,
-      100000 as spend
-    
-)
-
-, revenue as (
+with prep as (
   
   select
-    channel,
-    count(distinct event_id) as conversions,
-    sum(revenue) as revenue
+    'channel' as path_type,
+    ch.channel_path as path,
+    coalesce(sum(ch.revenue),0) as revenue,
+    coalesce(sum(s.spend),0) as spend
     
-  from spends s
+  from {{ ref('snowplow_attribution_channel_attributions') }} ch
   
-  left join {{ ref('snowplow_attribution_channel_attributions') }} c
+  left join {{ var('snowplow__spend_source') }} s
+  on ch.channel_path = s.path and s.period < ch.cv_tstamp 
+  and s.period > {{ dbt.dateadd('day', -90, 'ch.cv_tstamp') }}
   
-  on c.channel_path = s.channel and s.spend_date < c.cv_tstamp 
-  and {{ dbt.dateadd('day', 90, 'spend_date') }} > c.cv_tstamp
+  group by 1,2
   
-  group by 1
+  union all
+  
+  select
+    'campaign' as path_type,
+    camp.campaign_path as path,
+    coalesce(sum(camp.revenue),0) as revenue,
+    coalesce(sum(s.spend),0) as spend
+    
+  from {{ ref('snowplow_attribution_campaign_attributions') }} camp
+  
+  left join {{ var('snowplow__spend_source') }} s
+  on camp.campaign_path = s.path and s.period < camp.cv_tstamp 
+  and s.period > {{ dbt.dateadd('day', -90, 'camp.cv_tstamp') }}
+  
+  group by 1,2
   
 )
-  
-select 
-  r.channel,
-  r.conversions,
-  r.revenue,
-  s.spend,
+
+select
+  path_type,
+  path,
+  spend,
+  revenue,
   coalesce(revenue,0) / nullif(spend, 0) as ROAS
 
-from revenue r
-left join spends s
-on r.channel = s.channel 
-  
+from prep
+
 {% endmacro %}

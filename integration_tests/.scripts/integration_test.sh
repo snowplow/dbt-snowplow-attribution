@@ -28,9 +28,9 @@ for db in ${DATABASES[@]}; do
 
   eval "dbt seed --full-refresh --target $db" || exit 1;
 
-  echo "Snowplow Attribution integration tests: Execute events_stg for unified package"
+  echo "Snowplow Attribution integration tests: Execute events_stg for unified package and the spend source"
 
-  eval "dbt run --select snowplow_attribution_events_stg --full-refresh --target $db" || exit 1;
+  eval "dbt run --select snowplow_attribution_events_stg spend_source --full-refresh --target $db" || exit 1;
 
   echo "Snowplow Unified: Execute models"
 

@@ -51,7 +51,7 @@ with prep as (
     
   from {{ ref('snowplow_attribution_paths_to_conversion') }}
 
-  group by {{ dbt_utils.group_by(n=9) }}
+  {{ dbt_utils.group_by(n=9) }}
   
 )
 
