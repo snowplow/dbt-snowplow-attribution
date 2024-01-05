@@ -1,9 +1,9 @@
-{% macro report_table() %}
-    {{ return(adapter.dispatch('report_table', 'snowplow_attribution')()) }}
+{% macro roas() %}
+    {{ return(adapter.dispatch('roas', 'snowplow_attribution')()) }}
 {% endmacro %}
 
 
-{% macro default__report_table() %}
+{% macro default__roas() %}
 
 with prep as (
   

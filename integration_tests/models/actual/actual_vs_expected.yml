@@ -1,13 +1,6 @@
 version: 2
 
 models:
-  - name: snowplow_attribution_channel_counts_actual
-    tests:
-      - dbt_utils.equal_rowcount:
-          compare_model: ref('snowplow_attribution_channel_counts_expected_stg')
-      - snowplow_attribution_integration_tests.equality:
-          compare_model: ref('snowplow_attribution_channel_counts_expected_stg')
-          precision: 4
   - name: snowplow_attribution_channel_spend_actual
     tests:
       - dbt_utils.equal_rowcount:
@@ -43,13 +36,6 @@ models:
       - snowplow_attribution_integration_tests.equality:
           compare_model: ref('snowplow_attribution_paths_to_non_conversion_expected_stg')
           precision: 4
-  - name: snowplow_attribution_paths_actual
-    tests:
-      - dbt_utils.equal_rowcount:
-          compare_model: ref('snowplow_attribution_paths_expected_stg')
-      - snowplow_attribution_integration_tests.equality:
-          compare_model: ref('snowplow_attribution_paths_expected_stg')
-          precision: 4
 
 sources:
   - name: python_created_tables
@@ -57,4 +43,4 @@ sources:
     tables:
       - name: snowplow_attribution_channel_attribution
       - name: snowplow_attribution_path_summary_with_channels
-      - name: snowplow_attribution_report_table
+      - name: snowplow_attribution_roas

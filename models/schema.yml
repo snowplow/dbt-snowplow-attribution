@@ -16,16 +16,6 @@ sources:
       - name: snowplow_unified_sessions
 
 models:
-  - name: snowplow_attribution_channel_counts
-    description: Number of sessions per channel, campaign, source and medium
-    columns:
-      - name: path type
-        description: Type of path - channel or campaign
-      - name: path
-        description: Channel or campaign name
-      - name: number_of_sessions
-        description: Count of sessions per channel / campaign
-
   - name: snowplow_attribution_path_summary
     description: For each unique path, a summary of associated conversions, non conversions and revenue
     columns:
@@ -116,7 +106,7 @@ models:
       - name: position_based_attribution
         description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
-  - name: report_table
+  - name: roas
     description: The user defined report table to calculate ROIs
     columns:
       - name: path_type

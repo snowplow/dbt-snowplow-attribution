@@ -111,19 +111,19 @@ on-run-start: "{{ create_udfs() }}"
 
 
 
-{% docs macro_report_table %}
+{% docs macro_roas %}
 
 {% raw %}
 Creates the user table report based on custom, user defined-sql.
 
 #### Returns
 
-The sql required to create the report_table derived table.
+The sql required to create the roas derived table.
 
 #### Usage
 
 ```yml
-{{ report_table() }}
+{{ roas() }}
 ```
 {% endraw %}
 {% enddocs %}

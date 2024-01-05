@@ -11,8 +11,8 @@ macros:
     description: '{{ doc("macro_conversion_value") }}'
   - name: create_udfs
     description: '{{ doc("macro_create_udfs") }}'
-  - name: report_table
-    description: '{{ doc("macro_report_table") }}'
+  - name: roas
+    description: '{{ doc("macro_roas") }}'
   - name: source_checks
     description: '{{ doc("macro_source_checks") }}'
   - name: path_transformation

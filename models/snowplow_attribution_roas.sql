@@ -6,12 +6,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 #}
 
 
-{% if var('snowplow__run_python_script_in_snowpark') %}
-select *
+{{
+  config(
+    sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
+    enabled=var('snowplow__spend_source')!="{{ source('atomic', 'events') }}"
+  )
+}}
 
-from {{ source('python_created_tables', 'snowplow_attribution_report_table') }}
--- Using source() here to avoid a node error when the table is not found in the models/ folder (as it is created by the python script, not dbt). 
-{% else %}
--- for non-snowpark use cases just need a dummy select as no tests will be run on these models
-select 1 as col
-{% endif %}
+{{ roas() }}
