@@ -67,8 +67,8 @@ models:
         description: The derived_tstamp of the conversion event
       - name: revenue
         description: Revenue associated with the conversion
-      - name: campaign_path
-        description: Each path flattened from campaign_transformed_path that lead to a conversion
+      - name: campaign
+        description: Each campaign flattened from campaign_transformed_path that lead to a conversion
       - name: source_index
         description: The index which denotes the path order from first to last before conversion starting from 0
       - name: first_touch_attribution
@@ -93,8 +93,8 @@ models:
         description: The derived_tstamp of the conversion event
       - name: revenue
         description: Revenue associated with the conversion
-      - name: channel_path
-        description: Each path flattened from channel_transformed_path that lead to a conversion
+      - name: channel
+        description: Each channel flattened from channel_transformed_path that lead to a conversion
       - name: source_index
         description: The index which denotes the path order from first to last before conversion starting from 0
       - name: first_touch_attribution

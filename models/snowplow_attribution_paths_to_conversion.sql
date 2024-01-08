@@ -69,7 +69,7 @@ with paths as (
 
   {% if var('snowplow__conversion_hosts')|length > 0 %}
     -- restrict to certain hostnames
-    and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
+    and page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
   {% endif %}
   
   {% if var('snowplow__consider_intrasession_channels') %}
@@ -125,8 +125,8 @@ with paths as (
     {%- endif %}
     {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days"), 'c.cv_tstamp') }} cv_path_start_tstamp,
     c.revenue,
-    {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel_path,
-    {{ snowplow_utils.get_string_agg('campaign', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as campaign_path
+    {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel,
+    {{ snowplow_utils.get_string_agg('campaign', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as campaign
   
   from conversions c
 
@@ -164,10 +164,10 @@ with paths as (
     {%- endif %}
     cv_path_start_tstamp,
     revenue,
-    {{ snowplow_utils.get_split_to_array('channel_path', 's', ' > ') }} as channel_path,
-    {{ snowplow_utils.get_split_to_array('channel_path', 's', ' > ') }} as channel_transformed_path,
-    {{ snowplow_utils.get_split_to_array('campaign_path', 's', ' > ') }} as campaign_path,
-    {{ snowplow_utils.get_split_to_array('campaign_path', 's', ' > ') }} as campaign_transformed_path
+    {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
+    {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_transformed_path,
+    {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path,
+    {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_transformed_path
     
   from string_aggs s
 )
@@ -200,10 +200,10 @@ from path_transforms t
     {%- endif %}
     cv_path_start_tstamp,
     revenue,
-    channel_path as channel_path,
-    channel_path as channel_transformed_path
-    campaign_path as campaign_path,
-    campaign_path as campaign_transformed_path
+    channel as channel,
+    channel as channel_transformed_path
+    campaign as campaign,
+    campaign as campaign_transformed_path
 
   from string_aggs s
 )

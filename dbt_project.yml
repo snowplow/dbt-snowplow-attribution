@@ -34,7 +34,7 @@ vars:
     snowplow__consider_intrasession_channels: false # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels
     snowplow__channels_to_exclude: [] # Channels to exclude before creating path summaries (and therefore excluded from attribution analysis), e.g. ['Direct']
     snowplow__channels_to_include: [] # Optional filter on which channels to include when creating path summaries e.g. ['Direct']
-    snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_sessions')}}"
+    snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_views')}}"
     snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
     snowplow__spend_source: "{{ source('atomic', 'events') }}" # Should be changed to 'spend' by 'path' (channel and or campaign) by 'period' (which includes a date/timestamp field) table which will enable the ROAS table to run
     snowplow__conversions_source_filter: 'cv_tstamp' # a timestamp field the conversion source field is partitioned on (ideally) for optimized filtering  

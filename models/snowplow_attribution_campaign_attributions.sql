@@ -39,6 +39,7 @@ with arrays as (
     c.customer_id,
     c.cv_tstamp,
     c.revenue,
+    c.campaign_transformed_path,
     {{ snowplow_utils.get_split_to_array('campaign_transformed_path', 'c', ' > ') }} as campaign_path_array
     
   from {{ ref('snowplow_attribution_paths_to_conversion') }} c
@@ -54,7 +55,7 @@ with arrays as (
 )
 
 , unnesting as (
-  {{ snowplow_utils.unnest('event_id', 'campaign_path_array', 'campaign_path', 'arrays', with_index=true) }}
+  {{ snowplow_utils.unnest('event_id', 'campaign_path_array', 'campaign', 'arrays', with_index=true) }}
 )
 
 , prep as (
@@ -64,7 +65,8 @@ with arrays as (
     a.customer_id,
     a.cv_tstamp,
     a.revenue,
-    u.campaign_path,
+    a.campaign_transformed_path,
+    u.campaign,
     u.source_index,
     {{ snowplow_utils.get_array_size('campaign_path_array') }} as path_length,
     case when u.source_index = max(u.source_index) over (partition by u.event_id) then true else false end as is_last_element,
@@ -79,12 +81,13 @@ on a.event_id = u.event_id
 )
 
 select
-  event_id || campaign_path || source_index as composite_key,
+  event_id || campaign || source_index as composite_key,
   event_id,
   customer_id,
   cv_tstamp,
-  revenue,
-  campaign_path,
+  revenue as conversion_total_revenue,
+  campaign_transformed_path,
+  campaign,
   source_index,
   path_length,
   case when source_index = 0 then revenue else 0 end as first_touch_attribution,
