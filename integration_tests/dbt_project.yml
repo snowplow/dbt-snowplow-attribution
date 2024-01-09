@@ -43,7 +43,7 @@ models:
 
 vars:
   snowplow__enable_paths_to_non_conversion: false
-  snowplow__spend_source: "{{target.schema ~ '_snplw_attribution_int_tests'}}.spend_source"
+ 
   snowplow_unified:
     snowplow__events: "{{ ref('snowplow_attribution_events_stg') }}"
     snowplow__atomic_schema: "{{target.schema ~ '_snplw_attribution_int_tests'}}"
@@ -237,7 +237,7 @@ seeds:
         customer_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
         path: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
         transformed_path: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-      snowplow_attribution_roas_expected:
+      snowplow_attribution_overview_expected:
         channel: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
         conversions: float
         revenue: float

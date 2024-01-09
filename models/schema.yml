@@ -106,19 +106,27 @@ models:
       - name: position_based_attribution
         description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
-  - name: roas
-    description: The user defined report table to calculate ROIs
+  - name: overview
+    description: The user defined report view (potenitally showing ROIs)
     columns:
       - name: path_type
         description: Type of path - channel or campaign
-      - name: path
+      - name: attribution_type
+        description: Type of attribution (e.g. first touch)
+      - name: touch_point
         description: The type of channel or campaign to calculate the ROI and attribution for
-      - name: conversions
+      - name: n_conversions
         description: The number of conversions
-      - name: revenue
-        description: Revenue associated with the conversion
+      - name: min_cv_tstamp
+        description: The first conversion timestamp within the report period
+      - name: max_cv_tstamp
+        description: The last conversion timestamp within the report period
       - name: spend
         description: The marketing spend
+      - name: sum_conversion_total_revenue
+        description: Revenue associated with the conversion for all conversions where the given touch_point is included
+      - name: attributed_revenue
+        description: Revenue attributed to the touch-point
       - name: ROAS
         description: Return on advertising spend
       

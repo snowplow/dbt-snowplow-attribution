@@ -43,4 +43,4 @@ sources:
     tables:
       - name: snowplow_attribution_channel_attribution
       - name: snowplow_attribution_path_summary_with_channels
-      - name: snowplow_attribution_roas
+      - name: snowplow_attribution_overview

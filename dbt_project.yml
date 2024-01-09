@@ -36,7 +36,7 @@ vars:
     snowplow__channels_to_include: [] # Optional filter on which channels to include when creating path summaries e.g. ['Direct']
     snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_views')}}"
     snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
-    snowplow__spend_source: "{{ source('atomic', 'events') }}" # Should be changed to 'spend' by 'path' (channel and or campaign) by 'period' (which includes a date/timestamp field) table which will enable the ROAS table to run
+    snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'period' (which denotes a date/timestamp field) information
     snowplow__conversions_source_filter: 'cv_tstamp' # a timestamp field the conversion source field is partitioned on (ideally) for optimized filtering  
     snowplow__conversion_stitching: false
     
