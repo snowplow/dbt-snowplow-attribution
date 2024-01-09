@@ -39,55 +39,6 @@ select {{ channel_classification() }} as channel,
 {% enddocs %}
 
 
-{% docs macro_conversion_clause %}
-
-{% raw %}
-A macro to let users specify how to filter on conversion events.
-
-Example:
-```sql
-    cv_value > 0
-```
-
-#### Returns
-
-A sql to be used in a WHERE clause to filter on conversion events.
-
-#### Usage
-
-```sql
-where {{ conversion_clause() }}
-
-```
-{% endraw %}
-{% enddocs %}
-
-
-{% docs macro_conversion_value %}
-
-{% raw %}
-A user defined macro that specifies either a single column or a calculated value that represents the value associated with the conversion.
-
-Example:
-```sql
-    ev.cv_value
-```
-
-#### Returns
-
-A sql to be used to refer to the conversion value.
-
-#### Usage
-
-```sql
-
-select {{ conversion_value() }} as revenue
-
-```
-{% endraw %}
-{% enddocs %}
-
-
 {% docs macro_create_udfs %}
 
 {% raw %}
@@ -111,19 +62,19 @@ on-run-start: "{{ create_udfs() }}"
 
 
 
-{% docs macro_roas %}
+{% docs macro_overview %}
 
 {% raw %}
-Creates the user table report based on custom, user defined-sql.
+Defines the sql for the view called overview.
 
 #### Returns
 
-The sql required to create the roas derived table.
+The sql required to create the view called overview.
 
 #### Usage
 
 ```yml
-{{ roas() }}
+{{ overview() }}
 ```
 {% endraw %}
 {% enddocs %}
@@ -228,6 +179,25 @@ This macro is used to determine if a full-refresh is allowed (depending on the e
 
 #### Returns
 `snowplow__allow_refresh` if environment is not `dev`, `none` otherwise.
+
+{% endraw %}
+{% enddocs %}
+
+{% docs macro_paths_to_conversion %}
+
+{% raw %}
+Macro to allow flexibility for users to modify the definition of the paths_to_conversion incremental table.
+#### Returns
+
+The sql to define the paths_to_conversion table.
+
+#### Usage
+
+```sql
+
+{{ paths_to_conversion() }}
+
+```
 
 {% endraw %}
 {% enddocs %}

@@ -43,7 +43,7 @@ vars:
     snowplow_attribution_start_date: '2024-01-01'
     snowplow__enable_paths_to_non_conversion: false
     snowplow__allow_refresh: false
-    snowplow__dev_target_name: dev
+    snowplow__dev_target_name: 'dev'
 
 on-run-start: "{{ create_udfs() }}"
 

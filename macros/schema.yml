@@ -3,16 +3,10 @@ version: 2
 macros:
   - name: channel_classification
     description: '{{ doc("macro_channel_classification") }}'
-  - name: channel_spend
-    description: '{{ doc("macro_channel_spend") }}'
-  - name: conversion_clause
-    description: '{{ doc("macro_conversion_clause") }}'
-  - name: conversion_value
-    description: '{{ doc("macro_conversion_value") }}'
   - name: create_udfs
     description: '{{ doc("macro_create_udfs") }}'
-  - name: roas
-    description: '{{ doc("macro_roas") }}'
+  - name: overview
+    description: '{{ doc("macro_overview") }}'
   - name: source_checks
     description: '{{ doc("macro_source_checks") }}'
   - name: path_transformation
@@ -45,3 +39,7 @@ macros:
       - name: lookback_steps
         type: integer
         description: Defaulted to be taken from the snowplow__path_lookback_steps, the number of path to leave starting from the end
+  - name: allow_refresh
+    description: '{{ doc("macro_allow_refresh") }}'
+  - name: paths_to_conversion
+    description: '{{ doc("macro_paths_to_conversion") }}'
