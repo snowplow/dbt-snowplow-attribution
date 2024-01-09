@@ -137,6 +137,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   -- Returns the frequency transform of the given path array.
   -- Repeat events are removed, but tracked with a count.
   -- E.g. [D, A, B, B, C, D, C, C] --> [D(2), A(1), B(2), C(3)].
+  -- Not used in the package but could be useful for custom modeling solutions.
   CREATE FUNCTION IF NOT EXISTS {{target.schema}}.frequency_path(path ARRAY<string>)
   RETURNS ARRAY<string>
   LANGUAGE js

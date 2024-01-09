@@ -14,7 +14,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__transform_paths(model_type, source_cte) %}
 
-  {% set allowed_path_transforms = ['exposure_path', 'first_path', 'frequency_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
+  {% set allowed_path_transforms = ['exposure_path', 'first_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
 
   , path_transforms as (
 
@@ -34,7 +34,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       -- reverse transormation due to nested functions, items to be processed from left to right
       {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
+          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
         {{target.schema}}.{{path_transform_name}}(
       {% endfor %}
@@ -57,7 +57,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       -- reverse transormation due to nested functions, items to be processed from left to right
       {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
+          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
         {{target.schema}}.{{path_transform_name}}(
       {% endfor %}
@@ -111,7 +111,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
           {{ path_transformation('unique_path') }} as channel_transformed_path
 
         {% elif path_transform_name == 'frequency_path' %}
-          {{ path_transformation('frequency_path', '') }} as channel_transformed_path
+          {{ exceptions.raise_compiler_error(
+            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
+          ) }}
 
         {% elif path_transform_name == 'first_path' %}
           {{ path_transformation('first_path') }} as channel_transformed_path
@@ -134,7 +136,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
           {{ path_transformation('unique_path') }} as campaign_transformed_path
 
         {% elif path_transform_name == 'frequency_path' %}
-          {{ path_transformation('frequency_path', '') }} as campaign_transformed_path
+          {{ exceptions.raise_compiler_error(
+            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
+          ) }}
 
         {% elif path_transform_name == 'first_path' %}
           {{ path_transformation('first_path') }} as campaign_transformed_path

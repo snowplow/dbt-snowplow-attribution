@@ -28,7 +28,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     transformed_path
 
   {% elif transformation_type == 'frequency_path' %}
-    array_distinct(transform(transformed_path, element -> concat(element, "(", array_size(transformed_path)-array_size(array_remove(transformed_path, element )), ")" )))
+    {{ exceptions.raise_compiler_error(
+      "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
+      ) }}
 
   {% elif transformation_type == 'first_path' %}
     array_distinct(transformed_path)
@@ -68,7 +70,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     else transformed_path end
 
   {% else %}
-    {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+transformation_type+"' - is not yet supported for Databricks. Please choose from the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
+    {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+transformation_type+"' - is not yet supported for Databricks. Please choose from the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
 
   {% endif %}
 
