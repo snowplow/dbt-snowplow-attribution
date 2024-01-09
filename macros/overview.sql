@@ -71,147 +71,49 @@ with campaign_prep as (
 
 , unions as (
   
-  select
-    'channel' as path_type,
-    'first_touch' as attribution_type,
-    channel as touch_point,
-    sum(case when first_touch_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(first_touch_attribution) as attributed_revenue
-    
-  from channel_prep
+  {% set attribution_list = ['first_touch', 'last_touch', 'linear', 'position_based'] %}
   
-  {{ dbt_utils.group_by(n=3) }}
-  
-  union all
-  
+  {% for attribution in attribution_list %}
     select
-    'channel' as path_type,
-    'last_touch' as attribution_type,
-    channel as touch_point,
-    sum(case when last_touch_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(last_touch_attribution) as attributed_revenue
+      'channel' as path_type,
+      '{{ attribution }}' as attribution_type,
+      channel as touch_point,
+      sum(case when {{ attribution }}_attribution is not null then steps end) as steps,
+      count(distinct event_id) as n_conversions,
+      min(cv_tstamp) as min_cv_tstamp,
+      max(cv_tstamp) as max_cv_tstamp,
+      min(spend) as spend,
+      sum(conversion_total_revenue) as sum_conversion_total_revenue,
+      sum({{ attribution }}_attribution) as attributed_revenue
+      
+    from channel_prep
     
-  from channel_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-
-  union all
-  
+    {{ dbt_utils.group_by(n=3) }}
+    
+    union all
+  {% endfor %}
+   
+  {% for attribution in attribution_list %}
     select
-    'channel' as path_type,
-    'linear' as attribution_type,
-    channel as touch_point,
-    sum(case when linear_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(linear_attribution) as attributed_revenue
+      'campaign' as path_type,
+      '{{ attribution }}' as attribution_type,
+      campaign as touch_point,
+      sum(case when {{ attribution }}_attribution is not null then steps end) as steps,
+      count(distinct event_id) as n_conversions,
+      min(cv_tstamp) as min_cv_tstamp,
+      max(cv_tstamp) as max_cv_tstamp,
+      min(spend) as spend,
+      sum(conversion_total_revenue) as sum_conversion_total_revenue,
+      sum({{ attribution }}_attribution) as attributed_revenue
+      
+    from campaign_prep
     
-  from channel_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-  
-  union all
-  
-    select
-    'channel' as path_type,
-    'position_based' as attribution_type,
-    channel as touch_point,
-    sum(case when position_based_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(position_based_attribution) as attributed_revenue
+    {{ dbt_utils.group_by(n=3) }}
     
-  from channel_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-  
-union all
-
-  select
-    'campaign' as path_type,
-    'first_touch' as attribution_type,
-    campaign as touch_point,
-    sum(case when first_touch_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(first_touch_attribution) as attributed_revenue
-    
-  from campaign_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-  
-  union all
-  
-    select
-    'campaign' as path_type,
-    'last_touch' as attribution_type,
-    campaign as touch_point,
-    sum(case when last_touch_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(last_touch_attribution) as attributed_revenue
-    
-  from campaign_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-  
-  union all
-  
-    select
-    'campaign' as path_type,
-    'linear' as attribution_type,
-    campaign as touch_point,
-    sum(case when linear_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(linear_attribution) as attributed_revenue
-    
-  from campaign_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
-
-  union all
-  
-    select
-    'campaign' as path_type,
-    'position_based' as attribution_type,
-    campaign as touch_point,
-    sum(case when position_based_attribution is not null then steps end) as steps,
-    count(distinct event_id) as n_conversions,
-    min(cv_tstamp) as min_cv_tstamp,
-    max(cv_tstamp) as max_cv_tstamp,
-    min(spend) as spend,
-    sum(conversion_total_revenue) as sum_conversion_total_revenue,
-    sum(position_based_attribution) as attributed_revenue
-    
-  from campaign_prep
-  
-  {{ dbt_utils.group_by(n=3) }}
+    {%- if not loop.last %}
+      union all
+    {% endif %}
+  {% endfor %}
   
 )
 
