@@ -102,6 +102,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       select
         customer_id,
         {% if model_type == 'conversions' %}
+        event_id,
         cv_tstamp,
         cv_path_start_tstamp,
         revenue,
