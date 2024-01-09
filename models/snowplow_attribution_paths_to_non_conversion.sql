@@ -24,7 +24,7 @@ with paths as (
       case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
         else p.user_identifier end as customer_id,
     {% endif %}
-    start_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
+    derived_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
     {{ channel_classification() }} as channel,
     refr_urlpath as referral_path,
     mkt_campaign as campaign,
