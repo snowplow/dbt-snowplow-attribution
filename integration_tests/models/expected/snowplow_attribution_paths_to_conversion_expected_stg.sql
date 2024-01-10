@@ -8,4 +8,4 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 select *
 
-from {{ ref('snowplow_attribution_path_summary_expected') }}
+from {{ ref('snowplow_attribution_paths_to_conversion_expected') }}

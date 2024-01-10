@@ -85,7 +85,7 @@ select
   event_id,
   customer_id,
   cv_tstamp,
-  revenue as conversion_total_revenue,
+  revenue as cv_total_revenue,
   campaign_transformed_path,
   campaign,
   source_index,

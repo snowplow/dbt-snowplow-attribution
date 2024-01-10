@@ -66,7 +66,7 @@ with paths_to_conversion as (
 
 select
   coalesce(c.path_type, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.path_type{% endif %}) as path_type,
-  coalesce(c.transformed_path, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.transformed_path {% endif %}) as channel_path,
+  coalesce(c.transformed_path, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.transformed_path {% endif %}) as transformed_path,
   coalesce(c.conversions, 0) as conversions,
   
   {% if var('snowplow__enable_paths_to_non_conversion') %}

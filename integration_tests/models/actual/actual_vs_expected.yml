@@ -1,19 +1,26 @@
 version: 2
 
 models:
-  - name: snowplow_attribution_channel_spend_actual
+  - name: snowplow_attribution_campaign_attributions_actual
     tests:
       - dbt_utils.equal_rowcount:
-          compare_model: ref('snowplow_attribution_channel_spend_expected_stg')
+          compare_model: ref('snowplow_attributisnowplow_attribution_campaign_attributions_expected_stg')
       - snowplow_attribution_integration_tests.equality:
-          compare_model: ref('snowplow_attribution_channel_spend_expected_stg')
+          compare_model: ref('snowplow_attributisnowplow_attribution_campaign_attributions_expected_stg')
           precision: 4
-  - name: snowplow_attribution_conversions_actual
+  - name: snowplow_attribution_channel_attributions_actual
     tests:
       - dbt_utils.equal_rowcount:
-          compare_model: ref('snowplow_attribution_conversions_expected_stg')
+          compare_model: ref('snowplow_attributisnowplow_attribution_channel_attributions_expected_stg')
       - snowplow_attribution_integration_tests.equality:
-          compare_model: ref('snowplow_attribution_conversions_expected_stg')
+          compare_model: ref('snowplow_attributisnowplow_attribution_channel_attributions_expected_stg')
+          precision: 4
+  - name: snowplow_attribution_overview_actual
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('snowplow_attributisnowplow_attribution_overview_expected_stg')
+      - snowplow_attribution_integration_tests.equality:
+          compare_model: ref('snowplow_attributisnowplow_attribution_overview_expected_stg')
           precision: 4
   - name: snowplow_attribution_path_summary_actual
     tests:
@@ -37,10 +44,4 @@ models:
           compare_model: ref('snowplow_attribution_paths_to_non_conversion_expected_stg')
           precision: 4
 
-sources:
-  - name: python_created_tables
-    schema: "{{target.schema}}_derived" # Hardcode _derived to select correct schema
-    tables:
-      - name: snowplow_attribution_channel_attribution
-      - name: snowplow_attribution_path_summary_with_channels
-      - name: snowplow_attribution_overview
+

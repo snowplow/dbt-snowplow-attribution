@@ -16,7 +16,7 @@ with campaign_prep as (
     sum(c.last_touch_attribution) as last_touch_attribution,
     sum(c.linear_attribution) as linear_attribution,
     sum(c.position_based_attribution) as position_based_attribution,
-    coalesce(min(c.conversion_total_revenue),0) as conversion_total_revenue,
+    coalesce(min(c.cv_total_revenue),0) as cv_total_revenue,
     
     {% if var('snowplow__spend_source') != 'not defined' %}
       min(s.spend) as spend
@@ -48,7 +48,7 @@ with campaign_prep as (
     sum(c.last_touch_attribution) as last_touch_attribution,
     sum(c.linear_attribution) as linear_attribution,
     sum(c.position_based_attribution) as position_based_attribution,
-    coalesce(min(c.conversion_total_revenue),0) as conversion_total_revenue,
+    coalesce(min(c.cv_total_revenue),0) as cv_total_revenue,
   
   {% if var('snowplow__spend_source') != 'not defined' %}
     min(s.spend) as spend
@@ -83,7 +83,7 @@ with campaign_prep as (
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
-      sum(conversion_total_revenue) as sum_conversion_total_revenue,
+      sum(cv_total_revenue) as sum_cv_total_revenue,
       sum({{ attribution }}_attribution) as attributed_revenue
       
     from channel_prep
@@ -103,7 +103,7 @@ with campaign_prep as (
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
-      sum(conversion_total_revenue) as sum_conversion_total_revenue,
+      sum(cv_total_revenue) as sum_cv_total_revenue,
       sum({{ attribution }}_attribution) as attributed_revenue
       
     from campaign_prep

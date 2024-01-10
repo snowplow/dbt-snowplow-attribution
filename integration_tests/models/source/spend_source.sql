@@ -10,7 +10,7 @@ with spend as (
     select
       '2023-06-01' as period,
       'Direct' as channel,
-      'campaign1' as campaign,
+      'Campaign 1' as campaign,
       100000 as spend
       
     union all
@@ -18,7 +18,7 @@ with spend as (
     select
       '2023-06-01',
       'Organic_Search' as channel,
-      'campaign2' as campaign,
+      'Campaign 2' as campaign,
       100000 as spend
       
     union all
@@ -26,7 +26,15 @@ with spend as (
     select
       '2023-06-01',
       'Video' as channel,
-      'campaign3' as campaign,
+      'Campaign 3' as campaign,
+      100000 as spend
+      
+    union all
+    
+    select
+      '2023-06-01',
+      'Display_Other' as channel,
+      'Campaign 4' as campaign,
       100000 as spend
     
 )

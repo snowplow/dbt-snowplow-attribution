@@ -19,12 +19,12 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , path_transforms as (
 
     select
-      event_id,
       customer_id,
       {% if model_type == 'conversions' %}
-      cv_tstamp,
-      cv_path_start_tstamp,
-      revenue,
+        event_id,
+        cv_tstamp,
+        cv_path_start_tstamp,
+        revenue,
       {% endif %}
       {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
       {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
@@ -102,15 +102,14 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       select
         customer_id,
         {% if model_type == 'conversions' %}
-        event_id,
-        cv_tstamp,
-        cv_path_start_tstamp,
-        revenue,
+          event_id,
+          cv_tstamp,
+          cv_path_start_tstamp,
+          revenue,
         {% endif %}
         channel_path,
         {% if path_transform_name == 'unique_path' %}
           {{ path_transformation('unique_path') }} as channel_transformed_path
-
         {% elif path_transform_name == 'frequency_path' %}
           {{ exceptions.raise_compiler_error(
             "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
@@ -174,9 +173,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , path_transforms as (
 
     select
-      event_id,
       customer_id,
       {% if model_type == 'conversions' %}
+        event_id,
         cv_tstamp,
         revenue,
       {% endif %}

@@ -42,7 +42,7 @@ models:
       enabled: false
 
 vars:
-  snowplow__enable_paths_to_non_conversion: false
+  snowplow__enable_paths_to_non_conversion: true
  
   snowplow_unified:
     snowplow__events: "{{ ref('snowplow_attribution_events_stg') }}"
@@ -64,6 +64,7 @@ vars:
     snowplow__consider_intrasession_channels: false
     snowplow__channels_to_exclude: ['fake_channel']
     snowplow_attribution_start_date: '2023-01-01'
+    snowplow__spend_source: "{{ ref('spend_source') }}"
     
 
 seeds:
@@ -204,30 +205,11 @@ seeds:
           load_tstamp: timestamp
 
     expected:
-      snowplow_attribution_channel_attribution_expected:
-        channel: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        conversions: float
-        revenue: float
-      snowplow_attribution_channel_spend_expected:
-        channel: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        spend: float
-      snowplow_attribution_conversions_expected:
-        customer_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        cv_tstamp: timestamp
-        revenue: float
       snowplow_attribution_path_summary_expected:
         transformed_path: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
         conversions: float
         non_conversions: float
         revenue: float
-      snowplow_attribution_path_summary_with_channels_expected:
-        revenue: float
-        conversions: float
-        non_conversions: float
-        transformed_path: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        organic_search: float
-        video: float
-        direct: float
       snowplow_attribution_paths_to_conversion_expected:
         customer_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
         cv_tstamp: timestamp
@@ -244,11 +226,3 @@ seeds:
         revenue: float
         spend: float
         roas: float
-      snowplow_attribution_paths_expected:
-        customer_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        start_tstamp: timestamp
-        channel: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        referral_path: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        campaign: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        source: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
-        medium: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"

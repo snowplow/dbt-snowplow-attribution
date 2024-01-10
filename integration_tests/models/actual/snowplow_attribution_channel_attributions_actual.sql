@@ -6,8 +6,6 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 #}
 
 
-
 select *
 
-from {{ ref('snowplow_attribution_path_summary_with_channels_expected') }}
-where attribution_type = '{{ var("snowplow__attribution_model_for_snowpark", "NULL") }}'
+from {{ ref('snowplow_attribution_channel_attributions') }}

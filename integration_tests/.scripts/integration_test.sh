@@ -38,7 +38,7 @@ for db in ${DATABASES[@]}; do
 
   echo "Snowplow Attribution integration tests: Execute attribution models"
 
-  eval "dbt run --select snowplow_attribution --full-refresh --target $db" || exit 1;
+  eval "dbt run --select snowplow_attribution --full-refresh --vars '{snowplow__allow_refresh: true}' --target $db" || exit 1;
 
   echo "Snowplow Attribution integration tests: Execute attribution integration test models"
 
