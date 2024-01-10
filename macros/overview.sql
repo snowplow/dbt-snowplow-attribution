@@ -129,5 +129,7 @@ from unions
 where touch_point is not null
 
 {{ dbt_utils.group_by(n=10) }}
+
+order by 1,2,3
   
 {% endmacro %}
