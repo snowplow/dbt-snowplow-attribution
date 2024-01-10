@@ -40,7 +40,7 @@ vars:
     snowplow__conversions_source_filter: 'cv_tstamp' # a timestamp field the conversion source field is partitioned on (ideally) for optimized filtering  
     snowplow__conversion_stitching: false
     
-    snowplow_attribution_start_date: '2024-01-01'
+    snowplow_attribution_start_date: '2023-01-01'
     snowplow__enable_paths_to_non_conversion: false
     snowplow__allow_refresh: false
     snowplow__dev_target_name: 'dev'

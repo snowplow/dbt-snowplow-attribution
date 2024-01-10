@@ -7,9 +7,9 @@ You may obtain a copy of the Snowplow Community License Version 1.0 at https://d
 
 
 /* these test cases should help understand how the upper and lower limits work for developers
-   integration test data when processed by the unified model results in '2022-06-03 04:44:32.000' as first_pageview, '2022-08-01 05:37:27.000' as last_pageview
-   illustration: user would like to cover the conversion window between '2022-07-03' and '2022-07-31' (both are inclusive), this covers 29 days
-   using the default 30 days lookback period we should process pageview data from '2022-06-03' */
+   integration test data when processed by the unified model results in '2023-06-03 04:44:32.000' as first_pageview, '2023-08-01 05:37:27.000' as last_pageview
+   illustration: user would like to cover the conversion window between '2023-07-03' and '2023-07-31' (both are inclusive), this covers 29 days
+   using the default 30 days lookback period we should process pageview data from '2023-06-03' */
 
 {% set combined_time = 29 + 30 %}
 
@@ -25,7 +25,7 @@ You may obtain a copy of the Snowplow Community License Version 1.0 at https://d
     , case2 as (
 
         with base as (
-        select cast('2022-07-03' as timestamp) as cw_tstamp
+        select cast('2023-07-03' as timestamp) as cw_tstamp
         )
         select cast({{ dbt.dateadd('day', -30, 'cw_tstamp' ) }} as date) as result, 'lower_limit' as limit_type, 'sessions' as model_type, 'manual' as update_type, 'case2' as test_case_number
         from base
@@ -43,7 +43,7 @@ You may obtain a copy of the Snowplow Community License Version 1.0 at https://d
 
     , case4 as (
 
-    select cast('2022-07-31' as date) as result, 'upper_limit' as limit_type, 'sessions' as model_type, 'manual' as update_type, 'case4' as test_case_number
+    select cast('2023-07-31' as date) as result, 'upper_limit' as limit_type, 'sessions' as model_type, 'manual' as update_type, 'case4' as test_case_number
     )
 
     , case5 as (
@@ -57,7 +57,7 @@ You may obtain a copy of the Snowplow Community License Version 1.0 at https://d
 
     , case6 as (
 
-    select cast('2022-07-03' as date) as result, 'lower_limit' as limit_type, 'conversions' as model_type, 'manual' as update_type, 'case6' as test_case_number
+    select cast('2023-07-03' as date) as result, 'lower_limit' as limit_type, 'conversions' as model_type, 'manual' as update_type, 'case6' as test_case_number
     )
 
     , case7 as (
@@ -72,7 +72,7 @@ You may obtain a copy of the Snowplow Community License Version 1.0 at https://d
 
     , case8 as (
 
-        select cast('2022-07-31' as date) as result, 'upper_limit' as limit_type, 'conversions' as model_type, 'manual' as update_type, 'case8' as test_case_number
+        select cast('2023-07-31' as date) as result, 'upper_limit' as limit_type, 'conversions' as model_type, 'manual' as update_type, 'case8' as test_case_number
     )
 
     select * from case1
