@@ -41,7 +41,7 @@ with paths as (
 
   {% if var('snowplow__conversion_hosts')|length > 0 %}
     -- restrict to certain hostnames
-    and first_page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
+    and page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
   {% endif %}
 
   {% if var('snowplow__consider_intrasession_channels') %}
@@ -51,16 +51,41 @@ with paths as (
 
 )
 
+, conversions as (
+    
+    select
+      ev.event_id,
+      
+      {% if var('snowplow__conversion_stitching') %}
+        -- updated with mapping as part of post hook on derived conversions table
+        ev.stitched_user_id as customer_id,
+      {% else %}
+        case when ev.user_id is not null and ev.user_id != '' then ev.user_id
+            else ev.user_identifier end as customer_id,
+      {% endif %} 
+      
+      ev.cv_tstamp,
+      ev.cv_value as revenue
+      
+      {% if target.type in ['databricks', 'spark'] -%}
+        , date(cv_tstamp) as cv_tstamp_date
+      {%- endif %}
+
+    from {{ var('snowplow__conversions_source' )}} as ev
+
+    where cv_value > 0 and cv_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
+)
+
 , non_conversions as (
 
   select
     customer_id,
-    max(start_tstamp) as non_cv_tstamp
+    max(visit_start_tstamp) as non_cv_tstamp
 
   from paths s
 
-  where not exists (select customer_id from {{ ref('snowplow_attribution_conversions') }} c where s.customer_id = c.customer_id)
-  and start_tstamp >= '{{ var("snowplow_attribution_start_date") }}'
+  where not exists (select customer_id from conversions c where s.customer_id = c.customer_id)
+
   
   {% if var('snowplow__channels_to_exclude') %}
     -- Filters out any unwanted channels
@@ -81,18 +106,30 @@ with paths as (
 
   select
     n.customer_id,
-    {{ snowplow_utils.get_string_agg('channel', 's', separator=' > ', order_by_column='start_tstamp', sort_numeric=false, order_by_column_prefix='s') }} as path
-
+    {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel,
+    {{ snowplow_utils.get_string_agg('campaign', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as campaign
+  
   from non_conversions n
 
-  inner join {{ var('snowplow_path_source') }} s
-  on n.customer_id = s.customer_id
-    and {{ datediff('s.start_tstamp', 'n.non_cv_tstamp', 'day') }}  >= 0
-    and {{ datediff('s.start_tstamp', 'n.non_cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
+  inner join paths p 
+  on n.customer_id = p.customer_id
+  
+  and {{ datediff('p.visit_start_tstamp', 'n.non_cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
+  and {{ datediff('p.visit_start_tstamp', 'n.non_cv_tstamp', 'day') }}  >= 0
+  
+  where 1 = 1
+  
+  {% if var('snowplow__channels_to_exclude') %}
+    -- Filters out any unwanted channels
+    and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+  {% endif %}
 
+  {% if var('snowplow__channels_to_include') %}
+    -- Filters out any unwanted channels
+    and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+  {% endif %}
+  
   group by 1
-
-
 )
 
 {% if target.type not in ('redshift') %}
@@ -101,8 +138,10 @@ with paths as (
 
     select
       customer_id,
-      {{ snowplow_utils.get_split_to_array('path', 's', ' > ') }} as path,
-      {{ snowplow_utils.get_split_to_array('path', 's', ' > ') }} as transformed_path
+      {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
+      {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_transformed_path,
+      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path,
+      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_transformed_path
 
     from string_aggs s
 
@@ -112,10 +151,12 @@ with paths as (
 
 select
   customer_id,
-  {{ snowplow_utils.get_array_to_string('path', 'p', ' > ') }} as path,
-  {{ snowplow_utils.get_array_to_string('transformed_path', 'p', ' > ') }} as transformed_path
+    {{ snowplow_utils.get_array_to_string('channel_path', 't', ' > ') }} as channel_path,
+    {{ snowplow_utils.get_array_to_string('channel_transformed_path', 't', ' > ') }} as channel_transformed_path,
+    {{ snowplow_utils.get_array_to_string('campaign_path', 't', ' > ') }} as campaign_path,
+    {{ snowplow_utils.get_array_to_string('campaign_transformed_path', 't', ' > ') }} as campaign_transformed_path
 
-from path_transforms p
+from path_transforms t
 
 {% else %}
 
@@ -123,8 +164,10 @@ from path_transforms p
 
   select
     customer_id,
-    path as path,
-    path as transformed_path
+    channel as channel,
+    channel as channel_transformed_path
+    campaign as campaign,
+    campaign as campaign_transformed_path
 
   from string_aggs s
 
@@ -134,7 +177,7 @@ from path_transforms p
 
 
 select *
-from path_transforms p
+from path_transforms t
 
 {% endif %}
 

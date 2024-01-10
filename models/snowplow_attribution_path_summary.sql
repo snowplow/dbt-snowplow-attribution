@@ -12,18 +12,29 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   )
 }}
 
-
 with paths_to_conversion as (
 
   select
-    channel_path,
+    'channel' as path_type,
+    channel_transformed_path as transformed_path,
     count(*) as conversions,
     sum(revenue) as revenue
 
   from {{ ref('snowplow_attribution_paths_to_conversion') }}
 
-  group by 1
+  group by 1,2
+  
+  union all
+  
+  select
+    'campaign' as path_type,
+    campaign_transformed_path as transformed_path,
+    count(*) as conversions,
+    sum(revenue) as revenue
 
+  from {{ ref('snowplow_attribution_paths_to_conversion') }}
+
+  group by 1,2
 )
 
 {% if var('snowplow__enable_paths_to_non_conversion') %}
@@ -31,18 +42,31 @@ with paths_to_conversion as (
   , paths_to_non_conversion as (
 
     select
-      transformed_path,
+      'channel' as path_type,
+      channel_transformed_path as transformed_path,
       count(*) as non_conversions
 
     from {{ ref('snowplow_attribution_paths_to_non_conversion') }}
 
-    group by 1
+    group by 1,2
+    
+    union all
+    
+    select
+      'campaign' as path_type,
+      campaign_transformed_path as transformed_path,
+      count(*) as non_conversions
+
+    from {{ ref('snowplow_attribution_paths_to_non_conversion') }}
+
+    group by 1,2
   )
 
 {% endif %}
 
 select
-  coalesce(c.channel_path, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.transformed_path {% endif %}) as channel_path,
+  coalesce(c.path_type, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.path_type{% endif %}) as path_type,
+  coalesce(c.transformed_path, null {% if var('snowplow__enable_paths_to_non_conversion') %}, n.transformed_path {% endif %}) as channel_path,
   coalesce(c.conversions, 0) as conversions,
   
   {% if var('snowplow__enable_paths_to_non_conversion') %}
@@ -57,3 +81,5 @@ from paths_to_conversion c
   full join paths_to_non_conversion n
     on c.transformed_path = n.transformed_path
 {% endif %}
+
+order by 1,3 desc
