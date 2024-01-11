@@ -91,7 +91,7 @@ select
   path_length,
   case when source_index = 0 then revenue else 0 end as first_touch_attribution,
   case when is_last_element then revenue else 0 end as last_touch_attribution,
-  round(revenue / nullif(path_length, 0)) as linear_attribution,
+  revenue / nullif(path_length, 0.0) as linear_attribution,
   round(case when position_based_attribution is not null then position_based_attribution
       when source_index = 0 then revenue * 0.4
       when is_last_element then revenue * 0.4
