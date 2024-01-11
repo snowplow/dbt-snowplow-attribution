@@ -32,13 +32,21 @@ for db in ${DATABASES[@]}; do
 
   eval "dbt run --select snowplow_attribution_events_stg spend_source --full-refresh --target $db" || exit 1;
 
-  echo "Snowplow Unified: Execute models"
+  echo "Snowplow Unified: Execute models - 1/2"
 
   eval "dbt run --select snowplow_unified --full-refresh --vars '{snowplow__allow_refresh: true}' --target $db" || exit 1;
 
-  echo "Snowplow Attribution integration tests: Execute attribution models"
+  echo "Snowplow Attribution integration tests: Execute attribution models - 1/2"
 
   eval "dbt run --select snowplow_attribution --full-refresh --vars '{snowplow__allow_refresh: true}' --target $db" || exit 1;
+
+  echo "Snowplow Unified: Execute models - 2/2"
+
+  eval "dbt run --select snowplow_unified --target $db" || exit 1;
+
+  echo "Snowplow Attribution integration tests: Execute attribution models - 2/2"
+
+  eval "dbt run --select snowplow_attribution --target $db" || exit 1;
 
   echo "Snowplow Attribution integration tests: Execute attribution integration test models"
 

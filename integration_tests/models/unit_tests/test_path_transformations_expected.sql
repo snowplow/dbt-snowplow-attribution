@@ -33,6 +33,19 @@ with expected_result as (
 
   union all
 
+-- test frequency_path with a long and varied > repeated pattern
+  select
+    'a > a > a > Direct > a > Direct > Direct' as raw_array,
+    'Direct' as trim_long_path,
+    'Direct > Direct' as trim_long_path2,
+    'a > a > a > Direct > a > Direct > Direct' as unique_path,
+    'a > Direct > a > Direct' as exposure_path,
+    'a > Direct' as first_path,
+    'a > a > a > a' as remove_if_not_all,
+    'a > a > a > Direct > a' as remove_if_last_and_not_all
+
+  union all
+
 -- test one member scenario
   select
     'Direct' as raw_array,
