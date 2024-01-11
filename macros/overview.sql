@@ -42,7 +42,6 @@ with campaign_prep as (
     c.event_id,
     c.cv_tstamp,
     c.channel,
-    count(*) as steps,
     sum(c.first_touch_attribution) as first_touch_attribution,
     sum(c.last_touch_attribution) as last_touch_attribution,
     sum(c.linear_attribution) as linear_attribution,
