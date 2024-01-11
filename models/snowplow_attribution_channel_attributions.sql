@@ -37,7 +37,7 @@ with arrays as (
     c.event_id,
     c.customer_id,
     c.cv_tstamp,
-    c.revenue,
+    cast(c.revenue as {{type_numeric()}}) as revenue,
     c.channel_transformed_path,
     {{ snowplow_utils.get_split_to_array('channel_transformed_path', 'c', ' > ') }} as channel_path_array
     
