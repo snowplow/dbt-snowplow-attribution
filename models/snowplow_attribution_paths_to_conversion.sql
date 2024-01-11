@@ -10,6 +10,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     materialized='incremental',
     full_refresh=snowplow_attribution.allow_refresh(),
     on_schema_change='append_new_columns',
+    pre_hook= "{{ source_checks() }}",
     unique_key='event_id',
     upsert_date_key='cv_tstamp',
     sort='cv_tstamp',
@@ -28,8 +29,5 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     snowplow_optimize = true
   )
 }}
-
-
-{{ source_check() }}
 
 {{ paths_to_conversion() }}

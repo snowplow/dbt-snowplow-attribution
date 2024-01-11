@@ -31,7 +31,7 @@ vars:
     snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
     snowplow__path_lookback_steps: 0 # Limit for the number of marketing channels to look at before the conversion (0 = unlimited)
     snowplow__path_lookback_days: 30 # Restrict to marketing channels within this many days of the conversion (recommended: 30 / 14 / 7)
-    snowplow__consider_intrasession_channels: false # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels
+    snowplow__consider_intrasession_channels: true # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels
     snowplow__channels_to_exclude: [] # Channels to exclude before creating path summaries (and therefore excluded from attribution analysis), e.g. ['Direct']
     snowplow__channels_to_include: [] # Optional filter on which channels to include when creating path summaries e.g. ['Direct']
     snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_views')}}"

@@ -61,7 +61,6 @@ vars:
     snowplow__path_lookback_steps: 0
     snowplow__path_lookback_days: 30
     snowplow__path_transforms:  {'exposure_path': null}
-    snowplow__consider_intrasession_channels: false
     snowplow__channels_to_exclude: ['fake_channel']
     snowplow_attribution_start_date: '2023-01-01'
     snowplow__spend_source: "{{ ref('spend_source') }}"
@@ -260,7 +259,7 @@ seeds:
           last_touch_attribution: float
           linear_attribution: float
           position_based_attribution: float
-      overview:
+      snowplow_attribution_overview_expected:
         +column_types:
           path_type: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
           attribution_type: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"

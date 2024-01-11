@@ -1,11 +1,11 @@
 /* Returns the last 'snowplow__path_lookback_steps' number of channels in the path if snowplow__path_lookback_steps > 0,
    or the full path otherwise. */
 
-{% macro source_check() %}
-  {{ return(adapter.dispatch('source_check', 'snowplow_attribution')()) }}
+{% macro source_checks() %}
+  {{ return(adapter.dispatch('source_checks', 'snowplow_attribution')()) }}
 {% endmacro %}
 
-{% macro default__source_check() %}
+{% macro default__source_checks() %}
 
   {%- set __, last_cv_tstamp = snowplow_utils.return_limits_from_model(source('derived', 'snowplow_unified_conversions'),'cv_tstamp','cv_tstamp') %}
   {%- set __, last_path_tstamp = snowplow_utils.return_limits_from_model(source('derived', 'snowplow_unified_sessions'),'start_tstamp','start_tstamp') %}
