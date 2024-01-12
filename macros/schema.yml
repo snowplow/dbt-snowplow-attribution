@@ -5,8 +5,8 @@ macros:
     description: '{{ doc("macro_channel_classification") }}'
   - name: create_udfs
     description: '{{ doc("macro_create_udfs") }}'
-  - name: overview
-    description: '{{ doc("macro_overview") }}'
+  - name: attribution_overview
+    description: '{{ doc("macro_attribution_overview") }}'
   - name: source_checks
     description: '{{ doc("macro_source_checks") }}'
   - name: path_transformation

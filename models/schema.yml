@@ -126,7 +126,7 @@ models:
       - name: position_based_attribution
         description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
-  - name: overview
+  - name: snowplow_attribution_overview
     description: The user defined report view (potenitally showing ROIs)
     columns:
       - name: path_type

@@ -62,7 +62,7 @@ on-run-start: "{{ create_udfs() }}"
 
 
 
-{% docs macro_overview %}
+{% docs macro_attribution_overview %}
 
 {% raw %}
 Defines the sql for the view called overview.
@@ -74,7 +74,7 @@ The sql required to create the view called overview.
 #### Usage
 
 ```yml
-{{ overview() }}
+{{ attribution_overview() }}
 ```
 {% endraw %}
 {% enddocs %}
