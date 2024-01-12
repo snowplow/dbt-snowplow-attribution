@@ -33,7 +33,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       derived_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
       {{ channel_classification() }} as channel,
       refr_urlpath as referral_path,
-      mkt_campaign as campaign,
+      case when mkt_campaign is null then 'No campaign' when mkt_campaign = '' then 'No campaign' else mkt_campaign end as campaign,
       mkt_source as source,
       mkt_medium as medium
 
@@ -43,7 +43,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     from {{ var('snowplow__conversion_path_source') }} p
 
-    where start_tstamp >= date '{{ var("snowplow_attribution_start_date") }}'
+    where start_tstamp >= timestamp '{{ var("snowplow_attribution_start_date") }}'
 
     {% if is_incremental() %}
       {% if target.type in ['databricks', 'spark'] -%}
@@ -87,7 +87,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     from {{ var('snowplow__conversions_source' )}} as ev
 
-    where cv_value > 0
+    where 
+    
+    {{ var('snowplow__conversion_clause') }} 
 
     {% if is_incremental() %}
       {% if target.type in ['databricks', 'spark'] -%}
@@ -119,7 +121,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     on c.customer_id = p.customer_id
     
     and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
-    and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }}  >= 0
+    and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }}  > 0
     
     where 1 = 1
     
@@ -279,12 +281,22 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     {% if var('snowplow__channels_to_exclude') %}
       -- Filters out any unwanted channels
-      and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+      and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null
     {% endif %}
 
     {% if var('snowplow__channels_to_include') %}
       -- Filters out any unwanted channels
       and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+    {% endif %}
+
+    {% if var('snowplow__campaigns_to_exclude') %}
+      -- Filters out any unwanted channels
+      and campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null
+    {% endif %}
+
+    {% if var('snowplow__campaigns_to_include') %}
+      -- Filters out any unwanted channels
+      and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}
     
     {{ dbt_utils.group_by(n=5) }} {% if target.type in ['databricks', 'spark'] -%}, 6{% endif %}

@@ -61,7 +61,6 @@ on-run-start: "{{ create_udfs() }}"
 {% enddocs %}
 
 
-
 {% docs macro_attribution_overview %}
 
 {% raw %}

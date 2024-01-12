@@ -5,6 +5,8 @@
 
 {% macro default__attribution_overview() %}
 
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_campaign_attributions'),'cv_tstamp','cv_tstamp') %}
+
 with campaign_prep as (
   
   select
@@ -31,7 +33,12 @@ with campaign_prep as (
     and s.period > {{ dbt.dateadd('day', -90, 'cv_tstamp') }}
   {% endif %}
   
-  -- where cv_tstamp >= '2023-01-01' and cv_tstamp < '2023-03-01'
+  where
+  {% if not var('snowplow__conversion_window_start_date') == '' and not var('snowplow__conversion_window_end_date') == '' %}
+    cv_tstamp >= {{ var('snowplow__conversion_window_start_date') }} and cv_tstamp < {{ var('snowplow__conversion_window_end_date') }}
+  {% else %}
+    cv_tstamp >= cast( {{ dbt.dateadd('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }} as date)
+  {% endif%}
   
   {{ dbt_utils.group_by(n=3) }}
 )
@@ -62,22 +69,28 @@ with campaign_prep as (
     and s.period > {{ dbt.dateadd('day', -90, 'cv_tstamp') }}
   {% endif %}
   
-  -- where cv_tstamp >= '2023-01-01' and cv_tstamp < '2023-03-01'
-
+  where 
+  
+  {% if not var("snowplow__conversion_window_start_date") == '' and not var("snowplow__conversion_window_end_date") == '' %}
+    cv_tstamp >= {{ var('snowplow__conversion_window_start_date') }} and cv_tstamp < {{ var('snowplow__conversion_window_end_date') }}
+  {% else %}
+    cv_tstamp >= cast( {{ dbt.dateadd('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }} as date)
+  {% endif %}
+  
   {{ dbt_utils.group_by(n=3) }}
 )
 
 , unions as (
   
-  {% set attribution_list = ['first_touch', 'last_touch', 'linear', 'position_based'] %}
+  {% set attribution_list = var('snowplow__attribution_list') %}
   
   {% for attribution in attribution_list %}
     select
       'channel' as path_type,
       '{{ attribution }}' as attribution_type,
       channel as touch_point,
-      sum(case when {{ attribution }}_attribution is not null then steps end) as steps,
-      count(distinct event_id) as n_conversions,
+      count(distinct event_id) as in_n_conversion_paths,
+      sum({{ attribution }}_attribution)/sum(cv_total_revenue) as attributed_conversions,
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
@@ -96,8 +109,8 @@ with campaign_prep as (
       'campaign' as path_type,
       '{{ attribution }}' as attribution_type,
       campaign as touch_point,
-      sum(case when {{ attribution }}_attribution is not null then steps end) as steps,
-      count(distinct event_id) as n_conversions,
+      count(distinct event_id) as in_n_conversion_paths,
+      sum({{ attribution }}_attribution)/sum(cv_total_revenue) as attributed_conversions,
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,

@@ -10,7 +10,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 with prep as (
 select
   *
-from {{ ref('snowplow_attribution_events') }}
+from {{ ref('snowplow_unified_events') }}
 )
 
 

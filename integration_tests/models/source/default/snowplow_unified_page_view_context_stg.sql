@@ -15,7 +15,7 @@ select
   collector_tstamp as root_tstamp,
   split_part(split_part(contexts_com_snowplowanalytics_snowplow_web_page_1_0_0,'[{"id":"', 2), '"}]', 1) as id -- test dataset uses json format. Extract.
 
-from {{ ref('snowplow_attribution_events') }}
+from {{ ref('snowplow_unified_events') }}
 )
 
 select

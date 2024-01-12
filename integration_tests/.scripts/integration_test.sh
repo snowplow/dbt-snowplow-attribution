@@ -30,7 +30,7 @@ for db in ${DATABASES[@]}; do
 
   echo "Snowplow Attribution integration tests: Execute events_stg for unified package and the spend source"
 
-  eval "dbt run --select snowplow_attribution_events_stg spend_source --full-refresh --target $db" || exit 1;
+  eval "dbt run --select snowplow_unified_events_stg spend_source --full-refresh --target $db" || exit 1;
 
   echo "Snowplow Unified: Execute models - 1/2"
 

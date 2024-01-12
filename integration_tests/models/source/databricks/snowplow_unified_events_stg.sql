@@ -12,7 +12,7 @@ select
   *,
   from_json(contexts_com_snowplowanalytics_snowplow_web_page_1_0_0, 'array<struct<id:string>>') as contexts_com_snowplowanalytics_snowplow_web_page_1
 
-from {{ ref('snowplow_attribution_events') }}
+from {{ ref('snowplow_unified_events') }}
 )
 
 

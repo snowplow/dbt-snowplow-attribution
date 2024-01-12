@@ -5,6 +5,8 @@ macros:
     description: '{{ doc("macro_channel_classification") }}'
   - name: create_udfs
     description: '{{ doc("macro_create_udfs") }}'
+  - name: conversion_clause
+    description: '{{ doc("macro_conversion_clause") }}'
   - name: attribution_overview
     description: '{{ doc("macro_attribution_overview") }}'
   - name: source_checks
