@@ -60,7 +60,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     {% if var('snowplow__consider_intrasession_channels') %}
       -- yields one row per channel change
-      and mkt_medium is not null and mkt_medium != ''
+      and ((mkt_medium is not null and mkt_medium != '') or view_in_session_index = 1)
     {% endif %}
 
   )
