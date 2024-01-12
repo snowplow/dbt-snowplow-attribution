@@ -79,7 +79,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   non_conversions as (
     select
       s.customer_id,
-      visit_start_tstamp as non_cv_date,
+      visit_start_tstamp as non_cv_tstamp,
       s.channel,
       s.campaign,
       c.event_id,
@@ -99,16 +99,16 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     select 
         l.customer_id, 
         l.non_cv_block,
-        l.non_cv_date,
-        min(r.non_cv_date) as non_cv_path_start_date,
-        {{ snowplow_utils.get_string_agg('channel', 'r', separator=' > ', sort_numeric=false, order_by_column='non_cv_date', order_by_column_prefix='r') }} as channel,
-        {{ snowplow_utils.get_string_agg('campaign', 'r', separator=' > ', sort_numeric=false, order_by_column='non_cv_date', order_by_column_prefix='r') }} as campaign
+        l.non_cv_tstamp,
+        min(r.non_cv_tstamp) as non_cv_path_start_tstamp,
+        {{ snowplow_utils.get_string_agg('channel', 'r', separator=' > ', sort_numeric=false, order_by_column='non_cv_tstamp', order_by_column_prefix='r') }} as channel,
+        {{ snowplow_utils.get_string_agg('campaign', 'r', separator=' > ', sort_numeric=false, order_by_column='non_cv_tstamp', order_by_column_prefix='r') }} as campaign
     from
         non_conversions l
         left join non_conversions r on 
             l.customer_id = r.customer_id
-            and {{ datediff('r.non_cv_date', 'l.non_cv_date', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
-            and r.non_cv_date <= l.non_cv_date
+            and {{ datediff('r.non_cv_tstamp', 'l.non_cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
+            and r.non_cv_tstamp <= l.non_cv_tstamp
     where 
         -- ignore any touch points that are captured by a conversion window
         l.event_id is null
@@ -128,8 +128,8 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     select
       customer_id,
-      non_cv_date,
-      non_cv_path_start_date,
+      non_cv_tstamp,
+      non_cv_path_start_tstanon_cv_tstamp,
       {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
       {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_transformed_path,
       {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path,
@@ -141,10 +141,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {{ transform_paths('non_conversions', 'arrays') }}
 
   select
-    {{ dbt_utils.generate_surrogate_key(['customer_id', 'non_cv_date', 'non_cv_path_start_date'])}} as surrogate_key,
+    {{ dbt_utils.generate_surrogate_key(['customer_id', 'non_cv_tstamp', 'non_cv_path_start_tstamp'])}} as surrogate_key,
     customer_id,
-    non_cv_date,
-    non_cv_path_start_date,
+    non_cv_tstamp,
+    non_cv_path_start_tstamp,
     {{ snowplow_utils.get_array_to_string('channel_path', 't', ' > ') }} as channel_path,
     {{ snowplow_utils.get_array_to_string('channel_transformed_path', 't', ' > ') }} as channel_transformed_path,
     {{ snowplow_utils.get_array_to_string('campaign_path', 't', ' > ') }} as campaign_path,

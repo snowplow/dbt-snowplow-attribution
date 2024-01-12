@@ -179,8 +179,8 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
         cv_tstamp,
         revenue,
       {% elif model_type == 'non_conversions'%}
-        no_cv_date,
-        non_cv_path_start_date,
+        non_cv_tstamp,
+        non_cv_path_start_tstamp,
       {% endif %}
       {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
       channel_transformed_path,
