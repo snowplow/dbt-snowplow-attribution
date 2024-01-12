@@ -121,7 +121,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     on c.customer_id = p.customer_id
     
     and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
-    and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }}  > 0
+    and visit_start_tstamp < cv_tstamp
     
     where 1 = 1
     
