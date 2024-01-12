@@ -281,7 +281,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     {% if var('snowplow__channels_to_exclude') %}
       -- Filters out any unwanted channels
-      and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null
+      and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
     {% endif %}
 
     {% if var('snowplow__channels_to_include') %}
@@ -291,7 +291,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if var('snowplow__campaigns_to_exclude') %}
       -- Filters out any unwanted channels
-      and campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null
+      and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
     {% endif %}
 
     {% if var('snowplow__campaigns_to_include') %}
