@@ -50,7 +50,7 @@ vars:
     snowplow__events_table: snowplow_unified_events_stg
     snowplow__start_date: '2023-06-03'
     snowplow__databricks_catalog: hive_metastore
-    snowplow__backfill_limit_days: 70
+    snowplow__backfill_limit_days: 35
     snowplow__page_view_context: "{{ ref('snowplow_unified_page_view_context_stg') if target.type in ['redshift'] else null }}"
     snowplow__enable_mobile: false
     snowplow__conversion_events: [{"name": "transactions","condition": "tr_total > 0","value": "tr_total"}]
