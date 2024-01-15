@@ -19,7 +19,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       "field": "cv_tstamp",
       "data_type": "timestamp"
     }, databricks_val='cv_tstamp_date'),
-    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["user_identifier","session_identifier"], snowflake_val=["to_date(cv_tstamp)"]),
+    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["event_id","customer_id"], snowflake_val=["to_date(cv_tstamp)"]),
     tags=["derived"],
     sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
     tblproperties={
