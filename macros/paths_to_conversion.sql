@@ -47,9 +47,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if is_incremental() %}
       {% if target.type in ['databricks', 'spark'] -%}
-        and visit_start_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
+        and derived_tstamp >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
       {% else %}
-        and visit_start_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
+        and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
       {% endif %}
     {% endif %}
 

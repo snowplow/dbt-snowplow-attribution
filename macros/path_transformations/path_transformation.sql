@@ -75,14 +75,3 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% endif %}
 
 {% endmacro %}
-
-{% macro bigquery__path_transformation(transformation_type, transform_param) %}
-
-    {{target.schema}}_derived.{{transformation_type}}(
-
-      transformed_path
-
-    {% if transform_param %}, '{{transform_param}}' {% endif %}
-    )
-
-{% endmacro %}
