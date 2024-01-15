@@ -87,22 +87,22 @@ with paths as (
   where not exists (select customer_id from conversions c where s.customer_id = c.customer_id)
 
   
-  {% if var('snowplow__channels_to_exclude') != [''] %}
+  {% if var('snowplow__channels_to_exclude') %}
     -- Filters out any unwanted channels
     and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
   {% endif %}
 
-  {% if var('snowplow__channels_to_include') != [''] %}
+  {% if var('snowplow__channels_to_include') %}
     -- Filters out any unwanted channels
     and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
   {% endif %}
   
-  {% if var('snowplow__campaigns_to_exclude') != [''] %}
+  {% if var('snowplow__campaigns_to_exclude') %}
     -- Filters out any unwanted channels
     and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
   {% endif %}
 
-  {% if var('snowplow__campaigns_to_include') != [''] %}
+  {% if var('snowplow__campaigns_to_include') %}
     -- Filters out any unwanted channels
     and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
   {% endif %}
@@ -128,12 +128,12 @@ with paths as (
   
   where 1 = 1
   
-  {% if var('snowplow__channels_to_exclude') != [''] %}
+  {% if var('snowplow__channels_to_exclude') %}
     -- Filters out any unwanted channels
     and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
   {% endif %}
 
-  {% if var('snowplow__channels_to_include') != [''] %}
+  {% if var('snowplow__channels_to_include') %}
     -- Filters out any unwanted channels
     and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
   {% endif %}
@@ -189,4 +189,3 @@ select *
 from path_transforms t
 
 {% endif %}
-
