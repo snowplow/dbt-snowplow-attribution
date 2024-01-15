@@ -383,7 +383,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {% macro spark__create_udfs() %}
 {% endmacro %}
 
-{% macro snowflake__create_udfs(schema_suffix = '_derived') %}
+{% macro snowflake__create_udfs() %}
 
   {% set trim_long_path %}
   -- Returns the last snowplow__path_lookback_steps channels in the path if snowplow__path_lookback_steps > 0,
