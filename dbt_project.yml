@@ -27,18 +27,18 @@ clean-targets:         # directories to be removed by `dbt clean`
 vars:
   snowplow_attribution:
     # ONLY CHANGE ONCE (full-refresh required if changed for an incremental run)
-    snowplow__conversion_hosts: [] # Url_hosts to consider, when left empty (default) it considers all
+    snowplow__conversion_hosts: [''] # Url_hosts to consider, when left empty (default) it considers all
     snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
     snowplow__path_lookback_steps: 0 # Limit for the number of marketing channels to look at before the conversion (0 = unlimited)
     snowplow__path_lookback_days: 30 # Restrict to marketing channels within this many days of the conversion (recommended: 30 / 14 / 7)
     snowplow__consider_intrasession_channels: true # false = only considers the channel at the start (first page view) of the session, true = consider multiple channels in the conversion session as well as historical channels
-    snowplow__channels_to_exclude: [] # Optional filter on which channels to exclude before creating paths (and therefore excluded from attribution analysis), e.g. ['Direct']
-    snowplow__channels_to_include: [] # Optional filter on which channels to include when creating paths e.g. ['Direct']
-    snowplow__campaigns_to_exclude: [] # Optional filter on which campaigns to exclude before creating paths (and therefore excluded from attribution analysis), e.g. [''UK Snowplow September']
-    snowplow__campaigns_to_include: [] # Optional filter on which campaigns to include when creating paths e.g. ['UK Snowplow September']
+    snowplow__channels_to_exclude: [''] # Optional filter on which channels to exclude before creating paths (and therefore excluded from attribution analysis), e.g. ['Direct']
+    snowplow__channels_to_include: [''] # Optional filter on which channels to include when creating paths e.g. ['Direct']
+    snowplow__campaigns_to_exclude: [''] # Optional filter on which campaigns to exclude before creating paths (and therefore excluded from attribution analysis), e.g. [''UK Snowplow September']
+    snowplow__campaigns_to_include: [''] # Optional filter on which campaigns to include when creating paths e.g. ['UK Snowplow September']
     snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_views')}}"
     snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
-    snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'period' (which denotes a date/timestamp field) information
+    snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'spend_timestamp' (which denotes a timestamp field) information
     snowplow__conversions_source_filter: 'cv_tstamp' # a timestamp field the conversion source field is partitioned on (ideally) for optimized filtering  
     snowplow__conversion_stitching: false
     snowplow__conversion_clause: 'cv_value > 0'

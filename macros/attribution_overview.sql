@@ -29,15 +29,15 @@ with campaign_prep as (
   
   {% if var('snowplow__spend_source') != 'not defined' %}
     left join {{ var('snowplow__spend_source') }} s
-    on c.campaign = s.campaign and s.period < cv_tstamp 
-    and s.period > {{ dbt.dateadd('day', -90, 'cv_tstamp') }}
+    on c.campaign = s.campaign and s.spend_timestamp < cv_tstamp 
+    and s.spend_timestamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
   {% endif %}
   
   where
   {% if not var('snowplow__conversion_window_start_date') == '' and not var('snowplow__conversion_window_end_date') == '' %}
     cv_tstamp >= {{ var('snowplow__conversion_window_start_date') }} and cv_tstamp < {{ var('snowplow__conversion_window_end_date') }}
   {% else %}
-    cv_tstamp >= cast( {{ dbt.dateadd('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }} as date)
+    cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }}
   {% endif%}
   
   {{ dbt_utils.group_by(n=3) }}
@@ -65,8 +65,8 @@ with campaign_prep as (
   
   {% if var('snowplow__spend_source') != 'not defined' %}
     left join {{ var('snowplow__spend_source') }} s
-    on c.channel = s.channel and s.period < cv_tstamp 
-    and s.period > {{ dbt.dateadd('day', -90, 'cv_tstamp') }}
+    on c.channel = s.channel and s.spend_timestamp < cv_tstamp 
+    and s.spend_timestamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
   {% endif %}
   
   where 
@@ -74,7 +74,7 @@ with campaign_prep as (
   {% if not var("snowplow__conversion_window_start_date") == '' and not var("snowplow__conversion_window_end_date") == '' %}
     cv_tstamp >= {{ var('snowplow__conversion_window_start_date') }} and cv_tstamp < {{ var('snowplow__conversion_window_end_date') }}
   {% else %}
-    cv_tstamp >= cast( {{ dbt.dateadd('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }} as date)
+    cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }}
   {% endif %}
   
   {{ dbt_utils.group_by(n=3) }}

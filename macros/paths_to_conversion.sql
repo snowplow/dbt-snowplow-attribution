@@ -53,7 +53,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% endif %}
     {% endif %}
 
-    {% if var('snowplow__conversion_hosts')|length > 0 %}
+    {% if var('snowplow__conversion_hosts') != [''] %}
       -- restrict to certain hostnames, change it to first_page_urlhost if snowplow_unified_sessions is used as a path base instead of the defaulted snowplow_unified_views 
       and page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
     {% endif %}
@@ -125,12 +125,12 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     where 1 = 1
     
-    {% if var('snowplow__channels_to_exclude') %}
+    {% if var('snowplow__channels_to_exclude') != [''] %}
       -- Filters out any unwanted channels
       and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
     {% endif %}
 
-    {% if var('snowplow__channels_to_include') %}
+    {% if var('snowplow__channels_to_include') != [''] %}
       -- Filters out any unwanted channels
       and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
     {% endif %}
@@ -209,7 +209,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% endif %}
     {% endif %}
 
-    {% if var('snowplow__conversion_hosts')|length > 0 %}
+    {% if var('snowplow__conversion_hosts') != [''] %}
       -- restrict to certain hostnames, change it to first_page_urlhost if snowplow_unified_sessions is used as a path base instead of the defaulted snowplow_unified_views 
       and page_urlhost in ({{ snowplow_utils.print_list(var('snowplow__conversion_hosts')) }})
     {% endif %}
@@ -279,22 +279,22 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     where 1 = 1
     
-    {% if var('snowplow__channels_to_exclude') %}
+    {% if var('snowplow__channels_to_exclude') != [''] %}
       -- Filters out any unwanted channels
       and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
     {% endif %}
 
-    {% if var('snowplow__channels_to_include') %}
+    {% if var('snowplow__channels_to_include') != [''] %}
       -- Filters out any unwanted channels
       and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
     {% endif %}
 
-    {% if var('snowplow__campaigns_to_exclude') %}
+    {% if var('snowplow__campaigns_to_exclude') != [''] %}
       -- Filters out any unwanted channels
       and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
     {% endif %}
 
-    {% if var('snowplow__campaigns_to_include') %}
+    {% if var('snowplow__campaigns_to_include') != [''] %}
       -- Filters out any unwanted channels
       and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}

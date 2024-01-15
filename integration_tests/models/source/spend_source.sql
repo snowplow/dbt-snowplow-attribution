@@ -8,7 +8,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 with spend as (
 
     select
-      '2023-06-01' as period,
+      cast('2023-06-01' as {{dbt.type_timestamp()}}) as spend_timestamp,
       'Direct' as channel,
       'Campaign 1' as campaign,
       100000 as spend
@@ -16,7 +16,7 @@ with spend as (
     union all
     
     select
-      '2023-06-01',
+      cast('2023-06-01' as {{dbt.type_timestamp()}}),
       'Organic_Search' as channel,
       'Campaign 2' as campaign,
       100000 as spend
@@ -24,7 +24,7 @@ with spend as (
     union all
     
     select
-      '2023-06-01',
+      cast('2023-06-01' as {{dbt.type_timestamp()}}),
       'Video' as channel,
       'Campaign 3' as campaign,
       100000 as spend
@@ -32,7 +32,7 @@ with spend as (
     union all
     
     select
-      '2023-06-01',
+      cast('2023-06-01' as {{dbt.type_timestamp()}}),
       'Display_Other' as channel,
       'Campaign 4' as campaign,
       100000 as spend

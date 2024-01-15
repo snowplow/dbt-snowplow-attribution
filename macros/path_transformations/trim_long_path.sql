@@ -27,3 +27,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   end
 
 {% endmacro %}
+
+{% macro bigquery__trim_long_path(array_column, lookback_steps=var('snowplow__path_lookback_steps')) %}
+
+{{target.schema}}_derived.trim_long_path({{ array_column }}, {{ lookback_steps }})
+
+{% endmacro %}

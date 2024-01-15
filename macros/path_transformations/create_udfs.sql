@@ -17,7 +17,8 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% set trim_long_path %}
   -- Returns the last snowplow__path_lookback_steps channels in the path if snowplow__path_lookback_steps > 0,
   -- or the full path otherwise.
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.trim_long_path(path ARRAY<string>, snowplow__path_lookback_steps INTEGER)
+  -- for bigquery the function needs to exist in the same schema as the model it is used in
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.trim_long_path(path ARRAY<string>, snowplow__path_lookback_steps INTEGER)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -46,7 +47,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% set remove_if_not_all %}
   -- Returns the path with all copies of targetElem removed, unless the path consists only of
   -- targetElems, in which case the original path is returned.
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.remove_if_not_all(path ARRAY<string>, targetElem STRING)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.remove_if_not_all(path ARRAY<string>, targetElem STRING)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -66,7 +67,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% set remove_if_last_and_not_all %}
   -- Returns the path with all copies of targetElem removed from the tail, unless the path consists
   -- only of targetElems, in which case the original path is returned.
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.remove_if_last_and_not_all(path ARRAY<string>, targetElem STRING)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.remove_if_last_and_not_all(path ARRAY<string>, targetElem STRING)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -87,7 +88,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% set unique %}
   -- Returns the unique/identity transform of the given path array.
   -- E.g. [D, A, B, B, C, D, C, C] --> [D, A, B, B, C, D, C, C].
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.unique_path(path ARRAY<string>)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.unique_path(path ARRAY<string>)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -99,7 +100,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   -- Returns the exposure transform of the given path array.
   -- Sequential duplicates are collapsed.
   -- E.g. [D, A, B, B, C, D, C, C] --> [D, A, B, C, D, C].
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.exposure_path(path ARRAY<string>)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.exposure_path(path ARRAY<string>)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -117,7 +118,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   -- Returns the first transform of the given path array.
   -- Repeated channels are removed.
   -- E.g. [D, A, B, B, C, D, C, C] --> [D, A, B, C].
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.first_path(path ARRAY<string>)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.first_path(path ARRAY<string>)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -138,7 +139,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   -- Repeat events are removed, but tracked with a count.
   -- E.g. [D, A, B, B, C, D, C, C] --> [D(2), A(1), B(2), C(3)].
   -- Not used in the package but could be useful for custom modeling solutions.
-  CREATE FUNCTION IF NOT EXISTS {{target.schema}}.frequency_path(path ARRAY<string>)
+  CREATE FUNCTION IF NOT EXISTS {{target.schema}}_derived.frequency_path(path ARRAY<string>)
   RETURNS ARRAY<string>
   LANGUAGE js
   as r"""
@@ -165,7 +166,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 
   {% set create_schema %}
-      create schema if not exists {{target.schema}};
+      create schema if not exists {{target.schema}}_derived;
   {% endset %}
 
   -- create the udfs (as permanent UDFs)

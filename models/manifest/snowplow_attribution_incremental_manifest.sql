@@ -33,7 +33,7 @@ with prep as (
   select
     'paths_to_conversion' as model,
     {{ snowplow_utils.current_timestamp_in_utc() }} as processed_at,
-    {{ var("snowplow__conversion_hosts") }} as conversion_hosts,
+    {{ var("snowplow__conversion_hosts", 'snowplow') }} as conversion_hosts,
     
     {% for path_transform_name, _ in var('snowplow__path_transforms').items() %}
       '{{ path_transform_name }}'
@@ -45,14 +45,31 @@ with prep as (
     {{ var("snowplow__path_lookback_steps") }} as path_lookback_steps,
     {{ var("snowplow__path_lookback_days") }} as path_lookback_days,
     {{ var("snowplow__consider_intrasession_channels") }} as consider_intrasession_channels,
-    {{ var("snowplow__channels_to_exclude") }} as channels_to_exclude,
-    {{ var("snowplow__channels_to_include") }} as channels_to_include,
-    max(cv_tstamp) as last_processed_cv_tstamp
-    
-  from {{ ref('snowplow_attribution_paths_to_conversion') }}
-
-  {{ dbt_utils.group_by(n=9) }}
+    {{ var("snowplow__channels_to_exclude", 'Channel1') }} as channels_to_exclude,
+    {{ var("snowplow__channels_to_include", 'Channel2') }} as channels_to_include,
+    {{ var("snowplow__campaigns_to_exclude", 'Campaign1') }} as campaigns_to_exclude,
+    {{ var("snowplow__campaigns_to_include", 'Campaign2') }} as campaigns_to_include,
+    '{{ var("snowplow__conversion_clause") }}' as conversion_clause
   
 )
 
-select * from prep
+select
+  model,
+  processed_at,
+  {{ snowplow_utils.get_array_to_string('conversion_hosts', 'p', ',') }} as conversion_hosts,
+  path_transforms,
+  path_lookback_steps,
+  path_lookback_days,
+  consider_intrasession_channels,
+  {{ snowplow_utils.get_array_to_string('channels_to_exclude', 'p', ',') }} as channels_to_exclude,
+  {{ snowplow_utils.get_array_to_string('channels_to_include', 'p', ',') }} as channels_to_include,
+  {{ snowplow_utils.get_array_to_string('campaigns_to_exclude', 'p', ',') }} as campaigns_to_exclude,
+  {{ snowplow_utils.get_array_to_string('campaigns_to_include', 'p', ',') }} as campaigns_to_include,
+  conversion_clause,
+  max(c.cv_tstamp) as last_processed_cv_tstamp
+
+from prep p
+left join {{ ref('snowplow_attribution_paths_to_conversion') }} c
+on 1=1
+
+{{ dbt_utils.group_by(n=12) }}
