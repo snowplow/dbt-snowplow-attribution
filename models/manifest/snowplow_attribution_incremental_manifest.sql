@@ -45,10 +45,10 @@ with prep as (
     {{ var("snowplow__path_lookback_steps") }} as path_lookback_steps,
     {{ var("snowplow__path_lookback_days") }} as path_lookback_days,
     {{ var("snowplow__consider_intrasession_channels") }} as consider_intrasession_channels,
-    {{ var("snowplow__channels_to_exclude", 'Channel1') }} as channels_to_exclude,
-    {{ var("snowplow__channels_to_include", 'Channel2') }} as channels_to_include,
-    {{ var("snowplow__campaigns_to_exclude", 'Campaign1') }} as campaigns_to_exclude,
-    {{ var("snowplow__campaigns_to_include", 'Campaign2') }} as campaigns_to_include,
+    '{{ var("snowplow__channels_to_exclude", [])|join(',') }}' as channels_to_exclude,
+    '{{ var("snowplow__channels_to_include", [])|join(',') }}' as channels_to_include,
+    '{{ var("snowplow__campaigns_to_exclude", [])|join(',') }}' as campaigns_to_exclude,
+    '{{ var("snowplow__campaigns_to_include", [])|join(',') }}' as campaigns_to_include,
     '{{ var("snowplow__conversion_clause") }}' as conversion_clause
   
 )
@@ -61,10 +61,10 @@ select
   path_lookback_steps,
   path_lookback_days,
   consider_intrasession_channels,
-  {{ snowplow_utils.get_array_to_string('channels_to_exclude', 'p', ',') }} as channels_to_exclude,
-  {{ snowplow_utils.get_array_to_string('channels_to_include', 'p', ',') }} as channels_to_include,
-  {{ snowplow_utils.get_array_to_string('campaigns_to_exclude', 'p', ',') }} as campaigns_to_exclude,
-  {{ snowplow_utils.get_array_to_string('campaigns_to_include', 'p', ',') }} as campaigns_to_include,
+  channels_to_exclude,
+  channels_to_include,
+  campaigns_to_exclude,
+  campaigns_to_include,
   conversion_clause,
   max(c.cv_tstamp) as last_processed_cv_tstamp
 
