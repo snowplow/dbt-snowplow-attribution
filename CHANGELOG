@@ -1,3 +1,26 @@
-snowplow-attribution 0.1.0 (2023-xx-xx)
+snowplow-attribution 0.1.0 (2024-01-31)
 ---------------------------------------
-Add incremental model
+
+## Summary
+This is the first release of the Snowplow Attribution package, which contains incremental tables to prepare data for marketing attribution analysis as well as report tables which help you understand and visualize which channels or campaigns attributed the most to your revenue. It supports various attibution models out of the box, all in SQL.
+
+## Features
+- incremental dbt Package that produces tables for marketing attribution analysis
+- Support for Snowflake / BigQuery / Databricks / Redshift
+
+## Installation
+To install the package, add the following to the `packages.yml` in your project:
+
+### Github
+```yml
+packages:
+  - git: "https://github.com/snowplow/dbt-snowplow-attribution.git"
+    revision: 0.1.0
+```
+### dbt hub
+Please note that it may be a few days before the package is available on dbt hub after the initial release.
+```yml
+packages:
+  - package: snowplow/snowplow_attribution
+    version: [">=0.1.0", "<0.2.0"]
+

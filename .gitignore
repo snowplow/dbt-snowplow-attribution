@@ -8,3 +8,4 @@ venv/
 dbt-service-account.json
 .vscode/settings.json
 __pycache__
+package-lock.yml
