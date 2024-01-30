@@ -62,7 +62,7 @@ jobs:
         working-directory: ./integration_tests
     strategy:
       matrix:
-        dbt_version: ["1.6*"]
+        dbt_version: ["1.6.*"]
         warehouse: ["snowflake"]
 
 
@@ -105,10 +105,10 @@ jobs:
       run: |
         dbt run-operation post_ci_cleanup --target ${{ matrix.warehouse }}
         dbt seed --target ${{matrix.warehouse}} --full-refresh
-        dbt run --select snowplow_attribution_events_stg --full-refresh
+        dbt run --select snowplow_unified_events_stg spend_source --full-refresh
         dbt run --select snowplow_unified --full-refresh --vars '{snowplow__allow_refresh: true}'
         dbt run --select snowplow_attribution --full-refresh
-        dbt docs generate
+        dbt docs generate --vars '{snowplow__atomic_schema: "${{ matrix.warehouse }}_snplw_attribution_int_tests"}'
         rm -f ../docs/catalog.json
         rm -f ../docs/manifest.json
         rm -f ../docs/run_results.json
