@@ -1,3 +1,15 @@
+snowplow-media-player 0.2.0 (2024-03-XX)
+---------------------------------------
+## Summary
+XXX
+
+## Features
+- Add support for schema grants
+
+
+## Upgrading
+To upgrade simply bump the snowplow-attribution version in your `packages.yml` file. Note the minimum version of snowplow-utils required is now 0.16.2
+
 snowplow-attribution 0.1.0 (2024-01-31)
 ---------------------------------------
 
@@ -23,4 +35,3 @@ Please note that it may be a few days before the package is available on dbt hub
 packages:
   - package: snowplow/snowplow_attribution
     version: [">=0.1.0", "<0.2.0"]
-
