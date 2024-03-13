@@ -49,6 +49,7 @@ vars:
     snowplow__attribution_list: ['first_touch', 'last_touch', 'linear', 'position_based']
     
     snowplow__attribution_start_date: '2023-01-01'
+    snowplow__enable_attribution_overview: true
     snowplow__enable_paths_to_non_conversion: false
     snowplow__allow_refresh: false
     snowplow__dev_target_name: 'dev'
@@ -61,3 +62,5 @@ models:
     +materialized: table
     manifest:
       +schema: "snowplow_manifest"
+    optional_reporting:
+      +enabled: false
