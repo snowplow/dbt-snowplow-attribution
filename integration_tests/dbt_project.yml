@@ -40,6 +40,9 @@ models:
   snowplow_unified:
     users:
       enabled: false
+  snowplow_attribution:
+    optional_reporting:
+      +enabled: true
 
 vars:
   snowplow__enable_paths_to_non_conversion: true
