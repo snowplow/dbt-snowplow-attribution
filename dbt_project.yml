@@ -52,8 +52,14 @@ vars:
     snowplow__enable_paths_to_non_conversion: false
     snowplow__allow_refresh: false
     snowplow__dev_target_name: 'dev'
+    snowplow__grant_select_to: []
+    snowplow__grant_schema_usage: true
 
 on-run-start: "{{ create_udfs() }}"
+
+on-run-end:
+  - "{{ snowplow_utils.grant_usage_on_schemas_built_into(var('snowplow__grant_schemas', true)) }}"
+
 
 models:
   snowplow_attribution:
