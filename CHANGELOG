@@ -1,4 +1,4 @@
-snowplow-media-player 0.2.0 (2024-03-XX)
+snowplow-attribution 0.2.0 (2024-03-XX)
 ---------------------------------------
 ## Summary
 XXX
@@ -6,6 +6,8 @@ XXX
 ## Features
 - Add support for schema grants
 
+## Under the hood
+- Enforce full refresh flag for refreshing manifest tables
 
 ## Upgrading
 To upgrade simply bump the snowplow-attribution version in your `packages.yml` file. Note the minimum version of snowplow-utils required is now 0.16.2
