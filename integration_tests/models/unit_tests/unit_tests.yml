@@ -5,3 +5,7 @@ models:
     tests:
       - dbt_utils.equality:
           compare_model: ref('test_path_transformations_expected')
+  - name: test_spend_data_actual
+    tests:
+      - dbt_utils.equality:
+          compare_model: ref('test_spend_data_expected')
