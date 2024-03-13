@@ -7,7 +7,77 @@
 
 {%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_campaign_attributions'),'cv_tstamp','cv_tstamp') %}
 
-with campaign_prep as (
+-- making sure we only include spend that is needed
+with spend_with_unique_keys as (
+  
+  select row_number() over() as spend_id, *
+  from {{ var('snowplow__spend_source') }}
+)
+
+-- we need to dedupe as the join does the filtering, we can't group them upfront
+, campaign_spend as (
+
+  {% if var('snowplow__spend_source') != 'not defined' %}
+    select s.campaign, s.spend
+    from spend_with_unique_keys s
+    inner join {{ ref('snowplow_attribution_campaign_attributions') }} c
+    on c.campaign = s.campaign and s.spend_tstamp < cv_tstamp 
+    and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
+    where s.campaign is not null
+    qualify row_number() over (partition by s.spend_id ) = 1
+  
+  {% else %}
+    select true
+  {% endif %}
+    
+)
+
+, channel_spend as (
+  
+  {% if var('snowplow__spend_source') != 'not defined' %}
+    select s.channel, s.spend
+    from spend_with_unique_keys s
+    inner join {{ ref('snowplow_attribution_channel_attributions') }} c
+    on c.channel = s.channel and s.spend_tstamp < cv_tstamp
+    and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
+    where s.channel is not null
+    qualify row_number() over (partition by s.spend_id ) = 1
+  
+  {% else %}
+    select true
+  {% endif %}
+    
+)
+
+-- grouping spend to avoid duplicates in later join
+, campaign_spend_grouped as (
+
+  {% if var('snowplow__spend_source') != 'not defined' %}
+    select campaign, sum(spend) as spend
+    from campaign_spend
+    group by 1
+  
+  {% else %}
+    select true
+  {% endif %}
+    
+)
+
+, channel_spend_grouped as (
+  
+  {% if var('snowplow__spend_source') != 'not defined' %}
+    select channel, sum(spend) as spend
+    from channel_spend
+    group by 1
+  
+  {% else %}
+    select true
+  {% endif %}
+    
+)
+
+
+, campaign_prep as (
   
   select
     c.event_id,
@@ -28,9 +98,8 @@ with campaign_prep as (
   from {{ ref('snowplow_attribution_campaign_attributions') }} c
   
   {% if var('snowplow__spend_source') != 'not defined' %}
-    left join {{ var('snowplow__spend_source') }} s
-    on c.campaign = s.campaign and s.spend_tstamp < cv_tstamp 
-    and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
+    left join campaign_spend_grouped s
+    on s.campaign = c.campaign
   {% endif %}
   
   where
@@ -64,9 +133,8 @@ with campaign_prep as (
   from {{ ref('snowplow_attribution_channel_attributions') }} c
   
   {% if var('snowplow__spend_source') != 'not defined' %}
-    left join {{ var('snowplow__spend_source') }} s
-    on c.channel = s.channel and s.spend_tstamp < cv_tstamp 
-    and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
+    left join channel_spend_grouped s
+    on s.channel = c.channel
   {% endif %}
   
   where 
