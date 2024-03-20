@@ -64,6 +64,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , conversions as (
     
     select
+      ev.cv_id,
       ev.event_id,
       
       {% if var('snowplow__conversion_stitching') %}
@@ -75,6 +76,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% endif %} 
       
       ev.cv_tstamp,
+      ev.cv_type,
       ev.cv_value as revenue
 
     from {{ var('snowplow__conversions_source' )}} as ev
@@ -96,9 +98,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , string_aggs as (
     
     select
+      c.cv_id,
       c.event_id,
       c.customer_id,
       c.cv_tstamp, 
+      c.cv_type,
       {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days"), 'c.cv_tstamp') }} cv_path_start_tstamp,
       c.revenue,
       {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel,
@@ -134,15 +138,17 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}
     
-    {{ dbt_utils.group_by(n=5) }}
+    {{ dbt_utils.group_by(n=7) }}
   )
 
   , arrays as (
 
     select
+      cv_id,
       event_id,
       customer_id,
       cv_tstamp,
+      cv_type,
       cv_path_start_tstamp,
       revenue,
       {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
@@ -156,9 +162,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {{ transform_paths('conversions', 'arrays') }}
 
   select
+    cv_id,
     event_id,
     customer_id,
     cv_tstamp,
+    cv_type,
     {% if target.type in ['databricks', 'spark'] -%}
       date(cv_tstamp) as cv_tstamp_date,
     {%- endif %}
@@ -190,7 +198,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       derived_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
       {{ channel_classification() }} as channel,
       refr_urlpath as referral_path,
-      mkt_campaign as campaign,
+      case when mkt_campaign is null then 'No campaign' when mkt_campaign = '' then 'No campaign' else mkt_campaign end as campaign,
       mkt_source as source,
       mkt_medium as medium
 
@@ -203,15 +211,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     where start_tstamp >= date '{{ var("snowplow__attribution_start_date") }}'
 
     {% if is_incremental() %}
-    
-      {% set limit_query %}
-        select {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30),last_processed_cv_tstamp) }} as session_lookback_limit
-      {% endset %}
-
-      {% set results = run_query(limit_query) %}
-      {% set min_tstamp = snowplow_utils.cast_to_tstamp(results.columns[0].values()[0]) %}
-      
-      and derived_tstamp >= {{ min_tstamp }}
+      and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
     {% endif %}
 
     {% if var('snowplow__conversion_hosts') != [] %}
@@ -229,6 +229,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , conversions as (
     
     select
+      ev.cv_id,
       ev.event_id,
       
       {% if var('snowplow__conversion_stitching') %}
@@ -240,6 +241,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% endif %} 
       
       ev.cv_tstamp,
+      ev.cv_type,
       ev.cv_value as revenue
 
     from {{ var('snowplow__conversions_source' )}} as ev
@@ -255,9 +257,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   , string_aggs as (
     
     select
+      c.cv_id,
       c.event_id,
       c.customer_id,
       c.cv_tstamp, 
+      c.cv_type,
       {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days"), 'c.cv_tstamp') }} cv_path_start_tstamp,
       c.revenue,
       {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel,
@@ -293,15 +297,17 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}
     
-    {{ dbt_utils.group_by(n=5) }}
+    {{ dbt_utils.group_by(n=7) }}
   )
 
   , strings as (
 
     select
+      cv_id,
       event_id,
       customer_id,
       cv_tstamp,
+      cv_type,
       cv_path_start_tstamp,
       revenue,
       channel as channel_path,

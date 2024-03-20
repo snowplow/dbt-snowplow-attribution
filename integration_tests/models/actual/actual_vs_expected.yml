@@ -10,6 +10,7 @@ models:
           precision: 2
           compare_columns:
             - composite_key
+            - cv_id
             - event_id
             - customer_id
             - cv_tstamp
@@ -32,6 +33,7 @@ models:
           precision: 2
           compare_columns:
             - composite_key
+            - cv_id
             - event_id
             - customer_id
             - cv_tstamp
@@ -68,6 +70,7 @@ models:
           precision: 2
           compare_columns:
             - event_id
+            - cv_id
             - customer_id
             - cv_tstamp
             - cv_path_start_tstamp

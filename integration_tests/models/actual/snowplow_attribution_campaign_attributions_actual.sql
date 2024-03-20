@@ -8,9 +8,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 select 
   composite_key,
+  cv_id,
   event_id,
   customer_id,
   cv_tstamp,
+  cv_type,
   -- due to Databricks
   round(cast(cv_total_revenue as {{ type_numeric() }}), 2) as cv_total_revenue,
   campaign_transformed_path,
