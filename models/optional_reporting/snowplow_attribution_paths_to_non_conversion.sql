@@ -54,6 +54,7 @@ with paths as (
 , conversions as (
     
     select
+      ev.cv_id,
       ev.event_id,
       
       {% if var('snowplow__conversion_stitching') %}
@@ -65,6 +66,7 @@ with paths as (
       {% endif %} 
       
       ev.cv_tstamp,
+      ev.cv_type,
       ev.cv_value as revenue
 
     from {{ var('snowplow__conversions_source' )}} as ev

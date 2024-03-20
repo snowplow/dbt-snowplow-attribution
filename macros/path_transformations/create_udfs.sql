@@ -192,7 +192,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   returns varchar(max)
   stable
   AS $$
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
   path_list_sliced= path_list[max(0, len(path_list) - snowplow__path_lookback_steps):]
   if (snowplow__path_lookback_steps > 0):
     return ' > '.join(path_list_sliced);
@@ -225,7 +225,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   AS $$
 
   transformed_path = []
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
 
   for i in range(len(path_list)):
 
@@ -250,7 +250,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   stable
   AS $$
 
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
   reversed_path = list(reversed(path_list))
   tail_index = 0
   transformed_path = []
@@ -296,7 +296,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   stable
   AS $$
 
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
   transformed_path = []
 
   for i in range(len(path_list)):
@@ -321,7 +321,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   AS $$
 
   transformed_path = []
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
 
   for i in range(len(path_list)):
 
@@ -345,7 +345,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
   element_count = []
   transformed_path = []
-  path_list = path.split(' > ')
+  path_list = (path or '').split(' > ')
 
   for i in path_list:
    element_count.append(i + '('  + str(path_list.count(i)) + ')')

@@ -33,12 +33,16 @@ models:
   - name: snowplow_attribution_paths_to_conversion
     description: Customer id and the the paths the customer has followed that have lead to conversion
     columns:
+      - name: cv_id
+        description: UUID of the conversion source table
       - name: event_id
         description: Conversion event_id
       - name: customer_id
         description: Id for the customer (identified or cookie)
       - name: cv_tstamp
         description: The derived_tstamp of the conversion event
+      - name: cv_type
+        description: The type of conversion event
       - name: cv_path_start_tstamp
         description: Timestamp of the conversion event - path_lookback_days variable denoting the minimum start_tstamp of the visit prior to conversion
       - name: revenue
@@ -67,16 +71,20 @@ models:
         description: Transformations applied to "path" above
 
   - name: snowplow_attribution_campaign_attributions
-    description: By campaign path and conversion level incremental table that attributes the conversion value based on various algorythms
+    description: By campaign path and conversion level incremental table that attributes the conversion value based on various algoritms
     columns:
       - name: composite_key
-        description: The primary key of the table comprised of the conversion event_id + campaign path name (e.g. Organic_Search) + source_index
+        description: The primary key of the table comprised of the cv_id + campaign path name (e.g. Organic_Search) + source_index
+      - name: cv_id
+        description: UUID of the conversion source table
       - name: event_id
         description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
       - name: customer_id
         description: Id for the customer (identified or cookie)
       - name: cv_tstamp
         description: The derived_tstamp of the conversion event
+      - name: cv_type
+        description: The type of conversion event
       - name: cv_total_revenue
         description: Revenue associated with the conversion
       - name: campaign_transformed_path
@@ -97,16 +105,20 @@ models:
         description: The revenue attribution value for a given path with position_based attribution logic applied, meaning that the first and last touch-points will get 40% of the attribution, the remaining should get the equal split between the remaining 20%
 
   - name: snowplow_attribution_channel_attributions
-    description: By channel path and conversion level incremental table that attributes the conversion value based on various algorythms
+    description: By channel path and conversion level incremental table that attributes the conversion value based on various algoritms
     columns:
       - name: composite_key
-        description: The primary key of the table comprised of the conversion event_id + channel path name (e.g. Organic_Search) + source_index
+        description: The primary key of the table comprised of the cv_id + channel path name (e.g. Organic_Search) + source_index
+      - name: cv_id
+        description: UUID of the conversion source table
       - name: event_id
         description: A UUID for each event e.g. ‘c6ef3124-b53a-4b13-a233-0088f79dcbcb’
       - name: customer_id
         description: Id for the customer (identified or cookie)
       - name: cv_tstamp
         description: The derived_tstamp of the conversion event
+      - name: cv_type
+        description: The type of conversion event
       - name: cv_total_revenue
         description: Revenue associated with the conversion
       - name: cannel_transformed_path

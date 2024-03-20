@@ -9,9 +9,12 @@
 
 -- making sure we only include spend that is needed
 with spend_with_unique_keys as (
-  
-  select row_number() over() as spend_id, *
-  from {{ var('snowplow__spend_source') }}
+  {% if var('snowplow__spend_source') != 'not defined' %}
+    select row_number() over(order by spend_tstamp) as spend_id, *
+    from {{ var('snowplow__spend_source') }}
+  {% else %}
+    select true
+  {% endif %}
 )
 
 -- we need to dedupe as the join does the filtering, we can't group them upfront
@@ -24,7 +27,7 @@ with spend_with_unique_keys as (
     on c.campaign = s.campaign and s.spend_tstamp < cv_tstamp 
     and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
     where s.campaign is not null
-    qualify row_number() over (partition by s.spend_id ) = 1
+    qualify row_number() over (partition by s.spend_id order by s.spend_tstamp) = 1
   
   {% else %}
     select true
@@ -41,7 +44,7 @@ with spend_with_unique_keys as (
     on c.channel = s.channel and s.spend_tstamp < cv_tstamp
     and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
     where s.channel is not null
-    qualify row_number() over (partition by s.spend_id ) = 1
+    qualify row_number() over (partition by s.spend_id order by s.spend_tstamp) = 1
   
   {% else %}
     select true
@@ -80,9 +83,11 @@ with spend_with_unique_keys as (
 , campaign_prep as (
   
   select
+    c.cv_id,
     c.event_id,
     c.campaign,
     c.cv_tstamp,
+    c.cv_type,
     sum(c.first_touch_attribution) as first_touch_attribution,
     sum(c.last_touch_attribution) as last_touch_attribution,
     sum(c.linear_attribution) as linear_attribution,
@@ -92,7 +97,7 @@ with spend_with_unique_keys as (
     {% if var('snowplow__spend_source') != 'not defined' %}
       min(s.spend) as spend
     {% else %}
-      null as spend
+      cast(null as {{ dbt.type_numeric() }}) as spend
     {% endif %}
     
   from {{ ref('snowplow_attribution_campaign_attributions') }} c
@@ -109,14 +114,16 @@ with spend_with_unique_keys as (
     cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }}
   {% endif%}
   
-  {{ dbt_utils.group_by(n=3) }}
+  {{ dbt_utils.group_by(n=5) }}
 )
 
 , channel_prep as (
   
   select
+    c.cv_id,
     c.event_id,
     c.cv_tstamp,
+    c.cv_type,
     c.channel,
     sum(c.first_touch_attribution) as first_touch_attribution,
     sum(c.last_touch_attribution) as last_touch_attribution,
@@ -127,7 +134,7 @@ with spend_with_unique_keys as (
   {% if var('snowplow__spend_source') != 'not defined' %}
     min(s.spend) as spend
   {% else %}
-    null as spend
+    cast(null as {{ dbt.type_numeric() }}) as spend
   {% endif %}
   
   from {{ ref('snowplow_attribution_channel_attributions') }} c
@@ -145,7 +152,7 @@ with spend_with_unique_keys as (
     cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__conversion_window_days"), last_processed_cv_tstamp) }}
   {% endif %}
   
-  {{ dbt_utils.group_by(n=3) }}
+  {{ dbt_utils.group_by(n=5) }}
 )
 
 , unions as (
@@ -157,8 +164,8 @@ with spend_with_unique_keys as (
       'channel' as path_type,
       '{{ attribution }}' as attribution_type,
       channel as touch_point,
-      count(distinct event_id) as in_n_conversion_paths,
-      (sum({{ attribution }}_attribution)/sum(cv_total_revenue))*count(distinct event_id)  as attributed_conversions,
+      count(distinct cv_id) as in_n_conversion_paths,
+      (sum({{ attribution }}_attribution)/sum(cv_total_revenue))*count(distinct cv_id)  as attributed_conversions,
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
@@ -177,8 +184,8 @@ with spend_with_unique_keys as (
       'campaign' as path_type,
       '{{ attribution }}' as attribution_type,
       campaign as touch_point,
-      count(distinct event_id) as in_n_conversion_paths,
-      (sum({{ attribution }}_attribution)/sum(cv_total_revenue))*count(distinct event_id)  as attributed_conversions,
+      count(distinct cv_id) as in_n_conversion_paths,
+      (sum({{ attribution }}_attribution)/sum(cv_total_revenue))*count(distinct cv_id)  as attributed_conversions,
       min(cv_tstamp) as min_cv_tstamp,
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
