@@ -18,7 +18,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       "field": "cv_tstamp",
       "data_type": "timestamp"
     }, databricks_val='cv_tstamp_date'),
-    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["event_id","customer_id"], snowflake_val=["to_date(cv_tstamp)"]),
+    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["cv_id","customer_id"], snowflake_val=["to_date(cv_tstamp)"]),
     tags=["derived"],
     sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
     tblproperties={
@@ -35,9 +35,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 with arrays as (
   
   select
+    c.cv_id,
     c.event_id,
     c.customer_id,
     c.cv_tstamp,
+    c.cv_type,
     cast(c.revenue as {{type_numeric()}}) as revenue,
     c.campaign_transformed_path,
     {{ snowplow_utils.get_split_to_array('campaign_transformed_path', 'c', ' > ') }} as campaign_path_array
@@ -55,36 +57,40 @@ with arrays as (
 )
 
 , unnesting as (
-  {{ snowplow_utils.unnest('event_id', 'campaign_path_array', 'campaign', 'arrays', with_index=true) }}
+  {{ snowplow_utils.unnest('cv_id', 'campaign_path_array', 'campaign', 'arrays', with_index=true) }}
 )
 
 , prep as (
   
   select 
+    a.cv_id,
     a.event_id,
     a.customer_id,
     a.cv_tstamp,
+    a.cv_type,
     a.revenue,
     a.campaign_transformed_path,
     cast(u.campaign as {{ dbt.type_string() }}) as campaign,
     u.source_index,
     {{ snowplow_utils.get_array_size('campaign_path_array') }} as path_length,
-    case when u.source_index = max(u.source_index) over (partition by u.event_id) then true else false end as is_last_element,
+    case when u.source_index = max(u.source_index) over (partition by u.cv_id) then true else false end as is_last_element,
     case when {{ snowplow_utils.get_array_size('campaign_path_array') }} = 1 then revenue
         when {{ snowplow_utils.get_array_size('campaign_path_array') }} = 2 then revenue/2
         else null end as position_based_attribution
   from arrays a
 
 left join unnesting u
-on a.event_id = u.event_id
+on a.cv_id = u.cv_id
 
 )
 
 select
-  event_id || campaign || source_index as composite_key,
+  cv_id || campaign || source_index as composite_key,
+  cv_id,
   event_id,
   customer_id,
   cv_tstamp,
+  cv_type,
   {% if target.type in ['databricks', 'spark'] -%}
     date(cv_tstamp) as cv_tstamp_date,
   {%- endif %}
