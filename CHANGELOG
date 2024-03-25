@@ -1,16 +1,24 @@
-snowplow-attribution 0.2.0 (2024-03-XX)
+snowplow-attribution 0.2.0 (2024-03-26)
 ---------------------------------------
 ## Summary
-XXX
+This release adds new `cv_id` and `cv_type` columns to align with the latest snowplow_unified package's conversion table structure which this package may take as a base (recommended). It also makes a few internal tweaks, including adding support for [schema grants](https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/package-features/table-grants/#granting-usage-on-schemas).
+
+## 🚨 Breaking Changes 🚨
+- The surrogate_key as well as the update column has changed, it is best to do a [full-refresh](https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-operation/full-or-partial-refreshes/) as part of the upgrade.
 
 ## Features
 - Add support for schema grants
+- Add cv_id and cv_type
 
 ## Under the hood
 - Enforce full refresh flag for refreshing manifest tables
+- Safeguard spend source from duplication
+- Disable reporting models
 
 ## Upgrading
-To upgrade simply bump the snowplow-attribution version in your `packages.yml` file. Note the minimum version of snowplow-utils required is now 0.16.2
+To upgrade bump the snowplow-attribution version in your `packages.yml` file and run a [full refresh](https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-operation/full-or-partial-refreshes/)
+
+Although there are no direct dependencies between the packages, the [snowplow-unified](https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-models/dbt-unified-data-model/) package needs to be upgraded as well to [v.0.4.0](https://github.com/snowplow/dbt-snowplow-unified/releases/tag/0.4.0) for the new package structure to work.
 
 snowplow-attribution 0.1.0 (2024-01-31)
 ---------------------------------------
