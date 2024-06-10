@@ -40,7 +40,7 @@ vars:
     snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
     snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'spend_tstamp' (which denotes a timestamp field) information
     snowplow__conversion_stitching: false
-    snowplow__conversion_clause: 'cv_value > 0'
+    snowplow__conversion_clause: 'cv_value > 0 and user_identifier is not null'
     
     # Variables that change the drop and recompute report tables only
     snowplow__conversion_window_start_date: '' # an explicit conversion window start date overwrite
