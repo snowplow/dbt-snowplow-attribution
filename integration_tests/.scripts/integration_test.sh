@@ -11,7 +11,7 @@ do
 done
 
 declare -a ATTRIBUTION_MODELS_TO_TEST=("last_touch" "shapley")
-declare -a SUPPORTED_DATABASES=("bigquery" "databricks"  "snowflake")
+declare -a SUPPORTED_DATABASES=("bigquery" "databricks"  "snowflake", "redshift")
 
 # set to lower case
 DATABASE="$(echo $DATABASE | tr '[:upper:]' '[:lower:]')"
@@ -27,11 +27,19 @@ for db in ${DATABASES[@]}; do
   echo "Snowplow Attribution integration tests: Seeding data"
 
   eval "dbt seed --full-refresh --target $db" || exit 1;
-
+  
   echo "Snowplow Attribution integration tests: Execute events_stg for unified package and the spend source"
 
   eval "dbt run --select snowplow_unified_events_stg spend_source --full-refresh --target $db" || exit 1;
 
+  if [[ $db == "redshift" ]]; then
+  
+  echo "Snowplow Attribution integration tests: Execute page_view_context_stg for Redshift only"
+
+  eval "dbt run --select snowplow_unified_page_view_context_stg --full-refresh --target $db" || exit 1;
+  
+  fi
+  
   echo "Snowplow Unified: Execute models - 1/2"
 
   eval "dbt run --select snowplow_unified --full-refresh --vars '{snowplow__allow_refresh: true}' --target $db" || exit 1;
@@ -51,6 +59,14 @@ for db in ${DATABASES[@]}; do
   echo "Snowplow Attribution integration tests: Execute attribution integration test models"
 
   eval "dbt run --select snowplow_attribution_integration_tests --full-refresh --target $db" || exit 1;
+  
+  if [[ $db == "redshift" ]]; then
+  
+  echo "Snowplow Attribution integration tests: Execute attribution_overview for redshift only"
+
+  eval "dbt run --select snowplow_attribution_overview --target $db" || exit 1;
+
+  fi
 
   echo "Snowplow Attribution integration tests: Test models"
 
