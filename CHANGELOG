@@ -1,3 +1,17 @@
+snowplow-attribution 0.2.1 (2024-06-11)
+---------------------------------------
+## Summary
+This release removes null user_identifier data when the conversions_source and path_source are joined. Previously catching nulls on this field was reliant on tests only in the Unified package which was removed as it is easier to enforce this directly in the model itself.
+
+## Features
+- Exclude null user identifiers from sources
+
+## Under the hood
+- Add Redshift to tests
+
+## Upgrading
+Bump the snowplow-unified version in your `packages.yml` file.
+
 snowplow-attribution 0.2.0 (2024-03-26)
 ---------------------------------------
 ## Summary
