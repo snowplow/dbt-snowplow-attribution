@@ -1,3 +1,14 @@
+snowplow-attribution 0.2.2 (2024-06-19)
+---------------------------------------
+## Summary
+This release fixes a bug in the source_checks() macro that could fail if the `snowplow__conversions_source` or `snowplow__conversion_path_source` variables are overwritten. This fix should allow users to provide a `schema.table` or `warehouse.schema.table` style string reference for these sources without having to specify a dbt source in their project (similar to the default), if necessary.
+
+## Fixes
+- Fix source checks macro
+
+## Upgrading
+Bump the snowplow-unified version in your `packages.yml` file.
+
 snowplow-attribution 0.2.1 (2024-06-11)
 ---------------------------------------
 ## Summary
