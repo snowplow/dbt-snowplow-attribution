@@ -15,7 +15,7 @@
   {% if is_incremental() %}
     {% if last_cv_tstamp < last_processed_cv_tstamp %}
     {{ exceptions.raise_compiler_error(
-"Snowplow Error: The timestamp of the last conversion event in the conversion souce ("~ var('snowplow__conversions_source',source('derived', 'snowplow_unified_conversions')) ~ "):" ~ last_cv_tstamp ~ 
+"Snowplow Error: The timestamp of the last conversion event in the conversion source ("~ var('snowplow__conversions_source',source('derived', 'snowplow_unified_conversions')) ~ "):" ~ last_cv_tstamp ~ 
     " is lower than the timestamp of the last processed conversion " ~ last_processed_cv_tstamp ~ 
     "within the model "~ this ~ ". Please make sure you have updated downstream sources before proceeding."
     ) }}
