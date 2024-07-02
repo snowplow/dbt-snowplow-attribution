@@ -26,6 +26,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 vars:
   snowplow_attribution:
+    snowplow__atomic_schema: ''
     # ONLY CHANGE ONCE (full-refresh required if changed for an incremental run)
     snowplow__conversion_hosts: [] # Url_hosts to consider, when left empty (default) it considers all
     snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
@@ -45,10 +46,10 @@ vars:
     # Variables that change the drop and recompute report tables only
     snowplow__conversion_window_start_date: '' # an explicit conversion window start date overwrite
     snowplow__conversion_window_end_date: '' # an explicit conversion window end date overwrite
-    snowplow__conversion_window_days: 30 # last complete nth number of days (calculated from the last processed path in the path source) to dynamically update the conversion_window_start_date and end_date with. Will only apply if both variables are left as an empty string.
+    snowplow__conversion_window_days: 60 # last complete nth number of days (calculated from the last processed path in the path source) to dynamically update the conversion_window_start_date and end_date with. Will only apply if both variables are left as an empty string.
     snowplow__attribution_list: ['first_touch', 'last_touch', 'linear', 'position_based']
     
-    snowplow__attribution_start_date: '2023-01-01'
+    snowplow__attribution_start_date: '2024-05-31'
     snowplow__enable_attribution_overview: true
     snowplow__enable_paths_to_non_conversion: false
     snowplow__allow_refresh: false
@@ -66,7 +67,8 @@ models:
   snowplow_attribution:
     +schema: "derived"
     +materialized: table
+    +file_format: iceberg
     manifest:
-      +schema: "snowplow_manifest"
+      +schema: "manifest"
     optional_reporting:
       +enabled: false

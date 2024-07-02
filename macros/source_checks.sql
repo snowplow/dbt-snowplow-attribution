@@ -6,8 +6,8 @@
 
 {% macro default__source_checks() %}
 
-  {% set conversions_source_relation = snowplow_attribution.get_relation_from_string(var('snowplow__conversions_source', '')) | default(source('derived', 'snowplow_unified_conversions')) %}
-  {% set conversion_path_source_relation = snowplow_attribution.get_relation_from_string(var('snowplow__conversion_path_source', '')) | default(source('derived', 'snowplow_unified_views')) %}
+  {% set conversions_source_relation = snowplow_attribution.get_relation_from_string(var('snowplow__conversions_source', '')) or source('derived', 'snowplow_unified_conversions') %}
+  {% set conversion_path_source_relation = snowplow_attribution.get_relation_from_string(var('snowplow__conversion_path_source', '')) or source('derived', 'snowplow_unified_views') %}
   {%- set __, last_cv_tstamp = snowplow_utils.return_limits_from_model(conversions_source_relation,'cv_tstamp','cv_tstamp') %}
   {%- set __, last_path_tstamp = snowplow_utils.return_limits_from_model(conversion_path_source_relation,'start_tstamp','start_tstamp') %}
   {%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_path_start_tstamp','cv_path_start_tstamp') %}
