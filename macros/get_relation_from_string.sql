@@ -34,9 +34,6 @@ and var('snowplow__conversions_source'). */
         schema=schema,
         identifier=table
     ) %}
-    
-  {% if relation %}
-    {{ return(relation) }}
-  {% endif %}
-
+  
+  {{ return(relation) }}
 {% endmacro %}

@@ -26,6 +26,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 vars:
   snowplow_attribution:
+    # snowplow__atomic_schema: '' # Only uncomment it if you use spark
     # ONLY CHANGE ONCE (full-refresh required if changed for an incremental run)
     snowplow__conversion_hosts: [] # Url_hosts to consider, when left empty (default) it considers all
     snowplow__path_transforms: {'exposure_path': null} # dictionary of path transforms (and their argument, null if none) to perform on the full conversion path (see create_udfs.sql)
