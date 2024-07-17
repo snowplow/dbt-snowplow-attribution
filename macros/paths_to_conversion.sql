@@ -24,7 +24,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   with paths as (
     
     select
-      {% if var('snowplow__conversion_stitching') %}
+      {% if var('snowplow__view_stitching', false) %}
         stitched_user_id as customer_id,
       {% else %}
         case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
@@ -69,7 +69,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       ev.cv_id,
       ev.event_id,
       
-      {% if var('snowplow__conversion_stitching') %}
+      {% if var('snowplow__conversion_stitching', false) %}
         -- updated with mapping as part of post hook on derived conversions table
         ev.stitched_user_id as customer_id,
       {% else %}
@@ -191,7 +191,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   with paths as (
     
     select
-      {% if var('snowplow__conversion_stitching') %}
+      {% if var('snowplow__view_stitching', false) %}
         stitched_user_id as customer_id,
       {% else %}
         case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
@@ -236,7 +236,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       ev.cv_id,
       ev.event_id,
       
-      {% if var('snowplow__conversion_stitching') %}
+      {% if var('snowplow__conversion_stitching', false) %}
         -- updated with mapping as part of post hook on derived conversions table
         ev.stitched_user_id as customer_id,
       {% else %}
