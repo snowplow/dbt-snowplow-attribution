@@ -18,11 +18,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 with paths as (
   
   select
-    {% if var('snowplow__conversion_stitching') %}
+    {% if var('snowplow__conversion_stitching', false) %}
       stitched_user_id as customer_id,
     {% else %}
-      case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
-        else p.user_identifier end as customer_id,
+      coalesce(um.user_id, p.user_identifier) as customer_id,
     {% endif %}
     derived_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
     {{ channel_classification() }} as channel,
@@ -36,6 +35,11 @@ with paths as (
     {%- endif %}
 
   from {{ var('snowplow__conversion_path_source') }} p
+  
+  {% if not var('snowplow__conversion_stitching', false) %}
+    left join {{ var('snowplow__user_mapping_source') }} um
+    on um.user_identifier = p.user_identifier
+  {% endif %}
 
   where start_tstamp >= '{{ var("snowplow__attribution_start_date") }}'
 
@@ -57,12 +61,11 @@ with paths as (
       ev.cv_id,
       ev.event_id,
       
-      {% if var('snowplow__conversion_stitching') %}
+      {% if var('snowplow__conversion_stitching', false) %}
         -- updated with mapping as part of post hook on derived conversions table
         ev.stitched_user_id as customer_id,
       {% else %}
-        case when ev.user_id is not null and ev.user_id != '' then ev.user_id
-            else ev.user_identifier end as customer_id,
+        coalesce(um.user_id, ev.user_identifier) as customer_id,
       {% endif %} 
       
       ev.cv_tstamp,
@@ -70,6 +73,11 @@ with paths as (
       ev.cv_value as revenue
 
     from {{ var('snowplow__conversions_source' )}} as ev
+    
+    {% if not var('snowplow__conversion_stitching', false) %}
+      left join {{ var('snowplow__user_mapping_source') }} um
+      on um.user_identifier = ev.user_identifier
+    {% endif %}
 
     where cv_value > 0 and cv_tstamp >= '{{ var("snowplow__attribution_start_date") }}'
 )
