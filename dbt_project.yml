@@ -39,7 +39,7 @@ vars:
     snowplow__conversion_path_source: "{{ source('derived', 'snowplow_unified_views')}}"
     snowplow__conversions_source: "{{ source('derived', 'snowplow_unified_conversions') }}"
     snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'spend_tstamp' (which denotes a timestamp field) information
-    snowplow__conversion_stitching: false
+    snowplow__conversion_stitching: false # When true the view events will be joined to the conversion event based on stitched_user_id. Both conversion and view stitching needs to be enabled in the unified model for it to work properly.
     snowplow__conversion_clause: 'cv_value > 0 and user_identifier is not null'
     
     # Variables that change the drop and recompute report tables only

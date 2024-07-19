@@ -27,8 +27,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% if var('snowplow__conversion_stitching', false) %}
         stitched_user_id as customer_id,
       {% else %}
-        case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
-          else p.user_identifier end as customer_id,
+        user_identifier as customer_id,
       {% endif %}
       derived_tstamp as visit_start_tstamp, -- we consider the event timestamp to be the session start, rather than the session start timestamp
       {{ channel_classification() }} as channel,
@@ -73,14 +72,13 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
         -- updated with mapping as part of post hook on derived conversions table
         ev.stitched_user_id as customer_id,
       {% else %}
-        case when ev.user_id is not null and ev.user_id != '' then ev.user_id
-            else ev.user_identifier end as customer_id,
+        ev.user_identifier as customer_id,
       {% endif %} 
       
       ev.cv_tstamp,
       ev.cv_type,
       ev.cv_value as revenue
-
+  
     from {{ var('snowplow__conversions_source' )}} as ev
 
     where 
