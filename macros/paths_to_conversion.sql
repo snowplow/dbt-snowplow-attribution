@@ -24,7 +24,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   with paths as (
     
     select
-      {% if var('snowplow__view_stitching', false) %}
+      {% if var('snowplow__conversion_stitching', false) %}
         stitched_user_id as customer_id,
       {% else %}
         case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
@@ -191,7 +191,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   with paths as (
     
     select
-      {% if var('snowplow__view_stitching', false) %}
+      {% if var('snowplow__conversion_stitching', false) %}
         stitched_user_id as customer_id,
       {% else %}
         case when p.user_id is not null and p.user_id != '' then p.user_id -- use event user_id
