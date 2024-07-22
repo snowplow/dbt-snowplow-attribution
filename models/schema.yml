@@ -14,6 +14,7 @@ sources:
         description: An incremental table which contains all relevant fields for unique conversion events.
       - name: snowplow_unified_views 
       - name: snowplow_unified_sessions
+      - name: snowplow_unified_user_mapping
 
 models:
   - name: snowplow_attribution_path_summary
