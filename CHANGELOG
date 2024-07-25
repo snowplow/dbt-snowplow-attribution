@@ -1,3 +1,19 @@
+snowplow-attribution 0.3.0 (2024-07-26)
+---------------------------------------
+## Summary
+This release introduces a new user stitching logic when the `snowplow__conversion_stitching` variable is not enabled to avoid the need of having to enable both view and conversion stitching in the unified package to get the most accurate user journeys and conversions. The package will rely on one more source from the Unified Digital dbt package, the `snowplow_unified_user_mapping` table to accomplish this.
+
+## Features
+Change stitching logic
+
+## Upgrading
+Bump the snowplow-attribution version in your `packages.yml` file.
+
+## 🚨 Breaking Changes 🚨
+Due to the new user mapping table join in the paths_to_conversions() macro it may be that your `snowplow__conversion_clause` variable would need to be changed by adding the `ev` table alias to the fields it references (for user_identifier or user_id).
+
+The package by default will now rely on the `snowplow_unified_user_mapping` table. Although most users would use the Unified package as a source already (therefore this should not be a breaking change), for those users where it is not available, the `paths_to_conversion()` macro will have to be overwritten in the dbt project where the package is referenced. Similarly, the optional `paths_to_non_conversion` model is also changed, it would need to be disabled and overwritten in that case, too.
+
 snowplow-attribution 0.2.2 (2024-06-19)
 ---------------------------------------
 ## Summary
@@ -7,7 +23,7 @@ This release fixes a bug in the source_checks() macro that could fail if the `sn
 - Fix source checks macro
 
 ## Upgrading
-Bump the snowplow-unified version in your `packages.yml` file.
+Bump the snowplow-attribution version in your `packages.yml` file.
 
 snowplow-attribution 0.2.1 (2024-06-11)
 ---------------------------------------
@@ -21,7 +37,7 @@ This release removes null user_identifier data when the conversions_source and p
 - Add Redshift to tests
 
 ## Upgrading
-Bump the snowplow-unified version in your `packages.yml` file.
+Bump the snowplow-attribution version in your `packages.yml` file.
 
 snowplow-attribution 0.2.0 (2024-03-26)
 ---------------------------------------
