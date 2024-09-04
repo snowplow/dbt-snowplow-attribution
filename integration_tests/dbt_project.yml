@@ -26,6 +26,7 @@ quoting:
 
 models:
   snowplow_attribution_integration_tests:
+    +materialized: table
     bind: false
     +schema: "snplw_attribution_int_tests"
     source:

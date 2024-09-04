@@ -11,7 +11,7 @@ do
 done
 
 declare -a ATTRIBUTION_MODELS_TO_TEST=("last_touch" "shapley")
-declare -a SUPPORTED_DATABASES=("bigquery" "databricks"  "snowflake", "redshift")
+declare -a SUPPORTED_DATABASES=("bigquery" "databricks"  "snowflake", "redshift", "spark_iceberg")
 
 # set to lower case
 DATABASE="$(echo $DATABASE | tr '[:upper:]' '[:lower:]')"
