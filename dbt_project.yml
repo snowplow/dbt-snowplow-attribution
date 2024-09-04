@@ -65,6 +65,14 @@ on-run-end:
 
 models:
   snowplow_attribution:
+    +file_format: >
+      {{ 
+        var(
+          'snowplow__datalake_file_format',
+          'delta' if target.type != 'spark' else 'iceberg'
+        ) 
+      }}
+    +incremental_strategy: "{{ none if target.type not in ['spark'] else 'merge' }}"
     +schema: "derived"
     +materialized: table
     manifest:
