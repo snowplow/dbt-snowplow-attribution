@@ -67,12 +67,13 @@ integration_tests:
       token: "{{ env_var('DATABRICKS_TEST_TOKEN') }}"
       threads: 1
 
-    spark:
+    spark_iceberg:
       type: spark
-      method: odbc
-      driver: "{{ env_var('DATABRICKS_TEST_HTTP_PATH') }}"
+      method: thrift
+      host: "{{ env_var('SPARK_MASTER_HOST', 'localhost') }}"
+      port: 10000
+      user: "{{ env_var('SPARK_USER', 'spark') }}"
       schema: "gh_sp_attrib_dbt_{{ env_var('SCHEMA_SUFFIX') }}"
-      host: "{{ env_var('DATABRICKS_TEST_HOST') }}"
-      token: "{{ env_var('DATABRICKS_TEST_TOKEN') }}"
-      endpoint: "{{ env_var('DATABRICKS_TEST_ENDPOINT') }}"
-      threads: 4
+      connect_retries: 5
+      connect_timeout: 60
+      threads: 1

@@ -28,14 +28,12 @@ with spend_with_unique_keys as (
 , campaign_spend as (
 
   {% if var('snowplow__spend_source') != 'not defined' %}
-    select s.campaign, s.spend
+    select s.campaign, s.spend, row_number() over (partition by s.spend_id order by s.spend_tstamp) as row_num
     from spend_with_unique_keys s
     inner join {{ ref('snowplow_attribution_campaign_attributions') }} c
     on c.campaign = s.campaign and s.spend_tstamp < cv_tstamp 
     and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
-    where s.campaign is not null
-    qualify row_number() over (partition by s.spend_id order by s.spend_tstamp) = 1
-  
+    where s.campaign is not null  
   {% else %}
     select true
   {% endif %}
@@ -45,14 +43,12 @@ with spend_with_unique_keys as (
 , channel_spend as (
   
   {% if var('snowplow__spend_source') != 'not defined' %}
-    select s.channel, s.spend
+    select s.channel, s.spend, row_number() over (partition by s.spend_id order by s.spend_tstamp) as row_num
     from spend_with_unique_keys s
     inner join {{ ref('snowplow_attribution_channel_attributions') }} c
     on c.channel = s.channel and s.spend_tstamp < cv_tstamp
     and s.spend_tstamp > {{ snowplow_utils.timestamp_add('day', -90, 'cv_tstamp') }}
-    where s.channel is not null
-    qualify row_number() over (partition by s.spend_id order by s.spend_tstamp) = 1
-  
+    where s.channel is not null  
   {% else %}
     select true
   {% endif %}
@@ -65,6 +61,7 @@ with spend_with_unique_keys as (
   {% if var('snowplow__spend_source') != 'not defined' %}
     select campaign, sum(spend) as spend
     from campaign_spend
+    where row_num = 1
     group by 1
   
   {% else %}
@@ -78,6 +75,7 @@ with spend_with_unique_keys as (
   {% if var('snowplow__spend_source') != 'not defined' %}
     select channel, sum(spend) as spend
     from channel_spend
+    where row_num = 1
     group by 1
   
   {% else %}
