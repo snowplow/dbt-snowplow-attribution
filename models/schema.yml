@@ -4,6 +4,7 @@ version: 2
 sources:
   - name: atomic
     schema: atomic
+    database: "{{ var('snowplow__database', target.database) if target.type not in ['databricks', 'spark'] else var('snowplow__databricks_catalog', 'hive_metastore') if target.type in ['databricks'] else none }}"
     tables:
       - name: events
   - name: derived
