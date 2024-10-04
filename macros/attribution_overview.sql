@@ -12,7 +12,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__attribution_overview() %}
 
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_campaign_attributions'),'cv_tstamp','cv_tstamp') %}
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_campaign_attributions'),'cv_tstamp','cv_tstamp',true) %}
 
 -- making sure we only include spend that is needed
 with spend_with_unique_keys as (

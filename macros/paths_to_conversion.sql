@@ -19,7 +19,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__paths_to_conversion() %}
 
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_path_start_tstamp','cv_path_start_tstamp') %}
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_path_start_tstamp','cv_path_start_tstamp',true) %}
 
   with paths as (
     
