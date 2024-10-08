@@ -1,4 +1,4 @@
 packages:
   - local: ../
-  - git: https://github.com/snowplow/dbt-snowplow-utils.git
-    revision: macro_update_PE-6573
+  - git:  https://github.com/snowplow/dbt-snowplow-unified.git
+    revision:  utils_update
