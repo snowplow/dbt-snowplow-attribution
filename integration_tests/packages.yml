@@ -1,4 +1,4 @@
 packages:
   - local: ../
-  - git:  "https://github.com/snowplow/dbt-snowplow-unified.git"
+  - git: "https://github.com/snowplow/dbt-snowplow-unified.git"
     revision: "Release/snowplow-unified/0.5.0"
