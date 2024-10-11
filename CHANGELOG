@@ -1,3 +1,17 @@
+snowplow-attribution 0.4.0 (2024-10-15)
+---------------------------------------
+## Summary
+This release extends support to Apache Spark with the Iceberg file format and updates integration tests accordingly.
+
+## Features
+- Add support for Apache Spark with Iceberg file format
+
+## Under the hood
+- Fix return_limit_from_model macro 
+
+## Upgrading
+Update the snowplow-attribution version in your `packages.yml` file.
+
 snowplow-attribution 0.3.0 (2024-07-26)
 ---------------------------------------
 ## Summary
