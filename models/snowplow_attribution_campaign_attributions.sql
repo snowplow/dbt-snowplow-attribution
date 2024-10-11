@@ -29,7 +29,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   )
 }}
 
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_incremental_manifest'),'last_processed_cv_tstamp','last_processed_cv_tstamp') %}
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_incremental_manifest'),'last_processed_cv_tstamp','last_processed_cv_tstamp',true) %}
 
 
 with arrays as (
