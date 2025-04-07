@@ -186,9 +186,9 @@ non_conversions if used in paths_to_non_conversion */
         cv_path_start_tstamp,
         revenue,
       {% endif %}
-      {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+      channel_path,
       channel_transformed_path,
-      {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+      campaign_path,
       campaign_transformed_path
 
   -- the last cte will always equal to the total transformations unless there is no item there
