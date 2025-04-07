@@ -34,18 +34,30 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     {% if var('snowplow__path_transforms').items() %}
       -- 1. do transformations on channel_transformed_path:
       -- reverse transormation due to nested functions, items to be processed from left to right
-      {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
           {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
-        {{target.schema}}.{{path_transform_name}}(
+        {% if transform_param %}
+          {% for _ in range(transform_param|length) %}
+            {{target.schema}}.{{path_transform_name}}(
+          {% endfor %}
+        {% else %}
+          {{target.schema}}.{{path_transform_name}}(
+        {% endif %}
       {% endfor %}
 
       channel_transformed_path
+
       -- no reverse needed due to nested nature of function calls
       {% for _, transform_param in var('snowplow__path_transforms').items() %}
-        {% if transform_param %}, '{{transform_param}}' {% endif %}
-        )
+        {% if transform_param %}
+          {% for parameter in transform_param %}
+            ,'{{parameter}}')
+          {% endfor %}
+        {% else %}
+            )
+        {% endif %}
       {% endfor %}
 
       as channel_transformed_path, 
@@ -54,21 +66,35 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
      channel_transformed_path, 
     {% endif %}
     
+
     {% if var('snowplow__path_transforms').items() %}
     -- 2. do transformations on campaign_transformed_path:
       -- reverse transormation due to nested functions, items to be processed from left to right
-      {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
+
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
           {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
-        {{target.schema}}.{{path_transform_name}}(
+        {% if transform_param %}
+          {% for _ in range(transform_param|length) %}
+            {{target.schema}}.{{path_transform_name}}(
+          {% endfor %}
+        {% else %}
+          {{target.schema}}.{{path_transform_name}}(
+        {% endif %}
       {% endfor %}
 
       campaign_transformed_path
+
       -- no reverse needed due to nested nature of function calls
       {% for _, transform_param in var('snowplow__path_transforms').items() %}
-        {% if transform_param %}, '{{transform_param}}' {% endif %}
-        )
+        {% if transform_param %}
+          {% for parameter in transform_param %}
+            ,'{{parameter}}')
+          {% endfor %}
+        {% else %}
+            )
+        {% endif %}
       {% endfor %}
 
       as campaign_transformed_path
