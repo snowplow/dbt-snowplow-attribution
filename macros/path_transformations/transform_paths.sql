@@ -112,92 +112,63 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro spark__transform_paths(model_type, source_cte) %}
 
-  {% set total_transformations = var('snowplow__path_transforms').items()|length %}
-  -- set loop_count using namespace to define it as global variable for the loop to work
+  -- set namespace to define as global variables for the loop to work
   {% set loop_count = namespace(value=1) %}
+  {% set total_transformations = namespace(count=0) %} 
+  {% set previous_cte = namespace(value=null) %}
+  
 
   -- unlike for adapters using UDFS, reverse transormation is not needed as ctes will process items their params in order
   {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
 
     {%- if loop_count.value == 1 %}
-      {% set previous_cte = source_cte %}
+      {% set previous_cte.value = source_cte %}
     {% else %}
-      {% set previous_cte = loop_count.value-1 %}
+      {% set previous_cte.value = loop_count.value-1 %}
     {% endif %}
-
-    , transformation_{{ loop_count.value|string }} as (
-
-      select
-        customer_id,
-        {% if model_type == 'conversions' %}
-          cv_id,
-          event_id,
-          cv_tstamp,
-          cv_type,
-          cv_path_start_tstamp,
-          revenue,
-        {% endif %}
-        channel_path,
-        {% if path_transform_name == 'unique_path' %}
-          {{ path_transformation('unique_path', field_alias='channel') }} as channel_transformed_path,
-        {% elif path_transform_name == 'frequency_path' %}
-          {{ exceptions.raise_compiler_error(
-            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
-          ) }}
-
-        {% elif path_transform_name == 'first_path' %}
-          {{ path_transformation('first_path', field_alias='channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'exposure_path' %}
-          {{ path_transformation('exposure_path', field_alias='channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'remove_if_not_all' %}
-          {{ path_transformation('remove_if_not_all', transform_param, 'channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
-          {{ path_transformation('remove_if_last_and_not_all', transform_param, 'channel') }} as channel_transformed_path,
+    
+    {% if path_transform_name in ['remove_if_not_all', 'remove_if_last_and_not_all'] and transform_param %}
+    
+      {% for parameter in transform_param %}
         
-        {% else %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
-        
-        campaign_path,
-        {% if path_transform_name == 'unique_path' %}
-          {{ path_transformation('unique_path', field_alias='campaign') }} as campaign_transformed_path
+        {% set total_transformations.count = total_transformations.count+1 %}
 
-        {% elif path_transform_name == 'frequency_path' %}
-          {{ exceptions.raise_compiler_error(
-            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
-          ) }}
-
-        {% elif path_transform_name == 'first_path' %}
-          {{ path_transformation('first_path', field_alias='campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'exposure_path' %}
-          {{ path_transformation('exposure_path', field_alias='campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'remove_if_not_all' %}
-          {{ path_transformation('remove_if_not_all', transform_param, 'campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
-          {{ path_transformation('remove_if_last_and_not_all', transform_param, 'campaign') }} as campaign_transformed_path
-
-        {% else %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
+        , transformation_{{ loop_count.value|string }} as (
+          
+            {{ build_ctes(path_transform_name, parameter, model_type) }}
 
         {%- if loop_count.value == 1 %}
-         from {{ source_cte }}
-         )
+        from {{ source_cte }}
+        )
         {% else %}
         -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items
-         from transformation_{{ previous_cte|string }}
+        from transformation_{{ previous_cte.value|string }}
         )
         {% endif %}
-        {% set previous_cte = loop_count.value %}
         {% set loop_count.value = loop_count.value + 1 %}
+        {% set previous_cte.value = loop_count.value-1 %}
 
+      {% endfor %}
 
+    {% else %}
+    
+      {% set total_transformations.count = total_transformations.count+1 %}
+      
+      , transformation_{{ loop_count.value|string }} as (
+          
+          {{ build_ctes(path_transform_name, transform_param, model_type) }}
+
+        {%- if loop_count.value == 1 %}
+        from {{ source_cte }}
+        )
+        {% else %}
+        -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items
+        from transformation_{{ previous_cte.value|string }}
+        )
+        {% endif %}
+        {% set loop_count.value = loop_count.value + 1 %}
+      
+    {% endif %}
   {% endfor %}
 
   , path_transforms as (
@@ -218,8 +189,8 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       campaign_transformed_path
 
   -- the last cte will always equal to the total transformations unless there is no item there
-  {% if total_transformations > 0 %}
-    from transformation_{{ total_transformations }}
+  {% if total_transformations.count > 0 %}
+    from transformation_{{ total_transformations.count }}
 
   {% else %}
     from {{ source_cte }}
