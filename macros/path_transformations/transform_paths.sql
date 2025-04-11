@@ -14,9 +14,6 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__transform_paths(model_type) %}
 
-/* model_type refers to the model that is running this macro: conversions if used in paths_to_conversion, 
-non_conversions if used in paths_to_non_conversion */
-
   {% set allowed_path_transforms = ['exposure_path', 'first_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
 
   , path_transforms as (
