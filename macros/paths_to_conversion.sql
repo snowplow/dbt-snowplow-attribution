@@ -167,7 +167,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     from string_aggs s
   )
   
-, trim_long_path as (
+, trim_long_path_cte as (
   
   select
     cv_id,

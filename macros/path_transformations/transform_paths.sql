@@ -103,7 +103,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
      campaign_transformed_path
     {% endif %}
     
-  from trim_long_path
+  from trim_long_path_cte
 
   )
 
@@ -138,7 +138,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
             {{ build_ctes(path_transform_name, parameter, model_type) }}
 
         {%- if loop_count.value == 1 %}
-         from trim_long_path
+         from trim_long_path_cte
          )
         {% else %}
         -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items
@@ -193,7 +193,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     from transformation_{{ total_transformations.count }}
 
   {% else %}
-    from trim_long_path
+    from trim_long_path_cte
   {% endif %}
   )
 
