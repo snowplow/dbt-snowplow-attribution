@@ -159,7 +159,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
           {{ build_ctes(path_transform_name, transform_param, model_type) }}
 
         {%- if loop_count.value == 1 %}
-        from {{ source_cte }}
+        from 'trim_long_path_cte'
         )
         {% else %}
         -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items

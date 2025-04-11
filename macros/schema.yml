@@ -27,9 +27,6 @@ macros:
       - name: model_type
         type: string
         description: The macro only expects 'conversions' in case it runs in the path_to_conversions in which case it adds more fields
-      - name: source_cte
-        type: string
-        description: The name of the cte to take as an input for the macro the build sql to
   - name: trim_long_path
     description: '{{ doc("macro_trim_long_path") }}'
     arguments:
