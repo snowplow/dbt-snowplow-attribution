@@ -184,7 +184,7 @@ from path_transforms t
 
 )
 
-, trim_long_path as (
+, trim_long_path_cte as (
   
   select
     customer_id,
