@@ -133,7 +133,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
         , transformation_{{ loop_count.value|string }} as (
           
-            {{ build_ctes(path_transform_name, parameter, model_type) }}
+            {{ build_sql(path_transform_name, parameter, model_type) }}
 
         {%- if loop_count.value == 1 %}
          from trim_long_path_cte
@@ -154,7 +154,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       
       , transformation_{{ loop_count.value|string }} as (
           
-          {{ build_ctes(path_transform_name, transform_param, model_type) }}
+          {{ build_sql(path_transform_name, transform_param, model_type) }}
 
         {%- if loop_count.value == 1 %}
         from trim_long_path_cte
