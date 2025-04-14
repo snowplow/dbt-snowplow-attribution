@@ -141,15 +141,24 @@ with paths as (
     select
       customer_id,
       {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
-      {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_transformed_path,
-      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path,
-      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_transformed_path
-
+      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path
     from string_aggs s
 
 )
 
-{{ transform_paths('non_conversions', 'arrays') }}
+, trim_long_path_cte as (
+  
+  select
+    customer_id,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
+
+  from arrays
+)
+
+{{ transform_paths('non_conversions') }}
 
 select
   customer_id,
@@ -175,7 +184,19 @@ from path_transforms t
 
 )
 
-  {{ transform_paths('non_conversions', 'strings') }}
+, trim_long_path_cte as (
+  
+  select
+    customer_id,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
+
+  from strings
+)
+
+  {{ transform_paths('non_conversions') }}
 
 
 select *

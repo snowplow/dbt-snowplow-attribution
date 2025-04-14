@@ -162,14 +162,30 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       cv_path_start_tstamp,
       revenue,
       {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_path,
-      {{ snowplow_utils.get_split_to_array('channel', 's', ' > ') }} as channel_transformed_path,
-      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path,
-      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_transformed_path
-      
+      {{ snowplow_utils.get_split_to_array('campaign', 's', ' > ') }} as campaign_path
+
     from string_aggs s
   )
+  
+, trim_long_path_cte as (
+  
+  select
+    cv_id,
+    event_id,
+    customer_id,
+    cv_tstamp,
+    cv_type,
+    cv_path_start_tstamp,
+    revenue,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
 
-  {{ transform_paths('conversions', 'arrays') }}
+  from arrays
+  )
+    
+  {{ transform_paths('conversions') }}
 
   select
     cv_id,
@@ -331,14 +347,30 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       cv_path_start_tstamp,
       revenue,
       channel as channel_path,
-      channel as channel_transformed_path,
-      campaign as campaign_path,
-      campaign as campaign_transformed_path
+      campaign as campaign_path
 
     from string_aggs s
   )
+  
+, trim_long_path_cte as (
+  
+  select
+    cv_id,
+    event_id,
+    customer_id,
+    cv_tstamp,
+    cv_type,
+    cv_path_start_tstamp,
+    revenue,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
 
-    {{ transform_paths('conversions', 'strings') }}
+  from strings
+  )
+
+    {{ transform_paths('conversions') }}
 
   select *
   from path_transforms p

@@ -8,11 +8,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 /* Macro to remove complexity from models paths_to_conversion / paths_to_non_conversion. */
 
-{% macro transform_paths(model_type, source_cte) %}
-  {{ return(adapter.dispatch('transform_paths', 'snowplow_attribution')(model_type, source_cte)) }}
+{% macro transform_paths(model_type) %}
+  {{ return(adapter.dispatch('transform_paths', 'snowplow_attribution')(model_type)) }}
 {% endmacro %}
 
-{% macro default__transform_paths(model_type, source_cte) %}
+{% macro default__transform_paths(model_type) %}
 
   {% set allowed_path_transforms = ['exposure_path', 'first_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
 
@@ -28,24 +28,36 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
         cv_path_start_tstamp,
         revenue,
       {% endif %}
-      {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
-      {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+      channel_path,
+      campaign_path,
 
     {% if var('snowplow__path_transforms').items() %}
       -- 1. do transformations on channel_transformed_path:
       -- reverse transormation due to nested functions, items to be processed from left to right
-      {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
           {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
-        {{target.schema}}.{{path_transform_name}}(
+        {% if transform_param %}
+          {% for _ in range(transform_param|length) %}
+            {{target.schema}}.{{path_transform_name}}(
+          {% endfor %}
+        {% else %}
+          {{target.schema}}.{{path_transform_name}}(
+        {% endif %}
       {% endfor %}
 
       channel_transformed_path
+
       -- no reverse needed due to nested nature of function calls
       {% for _, transform_param in var('snowplow__path_transforms').items() %}
-        {% if transform_param %}, '{{transform_param}}' {% endif %}
-        )
+        {% if transform_param %}
+          {% for parameter in transform_param %}
+            ,'{{parameter}}')
+          {% endfor %}
+        {% else %}
+            )
+        {% endif %}
       {% endfor %}
 
       as channel_transformed_path, 
@@ -54,21 +66,35 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
      channel_transformed_path, 
     {% endif %}
     
+
     {% if var('snowplow__path_transforms').items() %}
     -- 2. do transformations on campaign_transformed_path:
       -- reverse transormation due to nested functions, items to be processed from left to right
-      {% for path_transform_name, _ in var('snowplow__path_transforms').items()|reverse %}
+
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
         {% if path_transform_name not in allowed_path_transforms %}
           {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
         {% endif %}
-        {{target.schema}}.{{path_transform_name}}(
+        {% if transform_param %}
+          {% for _ in range(transform_param|length) %}
+            {{target.schema}}.{{path_transform_name}}(
+          {% endfor %}
+        {% else %}
+          {{target.schema}}.{{path_transform_name}}(
+        {% endif %}
       {% endfor %}
 
       campaign_transformed_path
+
       -- no reverse needed due to nested nature of function calls
       {% for _, transform_param in var('snowplow__path_transforms').items() %}
-        {% if transform_param %}, '{{transform_param}}' {% endif %}
-        )
+        {% if transform_param %}
+          {% for parameter in transform_param %}
+            ,'{{parameter}}')
+          {% endfor %}
+        {% else %}
+            )
+        {% endif %}
       {% endfor %}
 
       as campaign_transformed_path
@@ -77,101 +103,72 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
      campaign_transformed_path
     {% endif %}
     
-  from {{ source_cte }}
+  from trim_long_path_cte
 
   )
 
 {% endmacro %}
 
 
-{% macro spark__transform_paths(model_type, source_cte) %}
+{% macro spark__transform_paths(model_type) %}
 
-  {% set total_transformations = var('snowplow__path_transforms').items()|length %}
-  -- set loop_count using namespace to define it as global variable for the loop to work
+  -- set namespace to define as global variables for the loop to work
   {% set loop_count = namespace(value=1) %}
+  {% set total_transformations = namespace(count=0) %} 
+  {% set previous_cte = namespace(value=null) %}
+  
 
   -- unlike for adapters using UDFS, reverse transormation is not needed as ctes will process items their params in order
   {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
 
     {%- if loop_count.value == 1 %}
-      {% set previous_cte = source_cte %}
+      {% set previous_cte.value = "trim_long_path" %}
     {% else %}
-      {% set previous_cte = loop_count.value-1 %}
+      {% set previous_cte.value = loop_count.value-1 %}
     {% endif %}
-
-    , transformation_{{ loop_count.value|string }} as (
-
-      select
-        customer_id,
-        {% if model_type == 'conversions' %}
-          cv_id,
-          event_id,
-          cv_tstamp,
-          cv_type,
-          cv_path_start_tstamp,
-          revenue,
-        {% endif %}
-        channel_path,
-        {% if path_transform_name == 'unique_path' %}
-          {{ path_transformation('unique_path', field_alias='channel') }} as channel_transformed_path,
-        {% elif path_transform_name == 'frequency_path' %}
-          {{ exceptions.raise_compiler_error(
-            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
-          ) }}
-
-        {% elif path_transform_name == 'first_path' %}
-          {{ path_transformation('first_path', field_alias='channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'exposure_path' %}
-          {{ path_transformation('exposure_path', field_alias='channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'remove_if_not_all' %}
-          {{ path_transformation('remove_if_not_all', transform_param, 'channel') }} as channel_transformed_path,
-
-        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
-          {{ path_transformation('remove_if_last_and_not_all', transform_param, 'channel') }} as channel_transformed_path,
+    
+    {% if path_transform_name in ['remove_if_not_all', 'remove_if_last_and_not_all'] and transform_param %}
+    
+      {% for parameter in transform_param %}
         
-        {% else %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
-        
-        campaign_path,
-        {% if path_transform_name == 'unique_path' %}
-          {{ path_transformation('unique_path', field_alias='campaign') }} as campaign_transformed_path
+        {% set total_transformations.count = total_transformations.count+1 %}
 
-        {% elif path_transform_name == 'frequency_path' %}
-          {{ exceptions.raise_compiler_error(
-            "Snowplow Error: Frequency path is currently not supported by the model, please remove it from the variable and use this path transformation function in a custom model."
-          ) }}
-
-        {% elif path_transform_name == 'first_path' %}
-          {{ path_transformation('first_path', field_alias='campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'exposure_path' %}
-          {{ path_transformation('exposure_path', field_alias='campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'remove_if_not_all' %}
-          {{ path_transformation('remove_if_not_all', transform_param, 'campaign') }} as campaign_transformed_path
-
-        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
-          {{ path_transformation('remove_if_last_and_not_all', transform_param, 'campaign') }} as campaign_transformed_path
-
-        {% else %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, frequency_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
+        , transformation_{{ loop_count.value|string }} as (
+          
+            {{ build_ctes(path_transform_name, parameter, model_type) }}
 
         {%- if loop_count.value == 1 %}
-         from {{ source_cte }}
+         from trim_long_path_cte
          )
         {% else %}
         -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items
-         from transformation_{{ previous_cte|string }}
+        from transformation_{{ previous_cte.value|string }}
         )
         {% endif %}
-        {% set previous_cte = loop_count.value %}
         {% set loop_count.value = loop_count.value + 1 %}
+        {% set previous_cte.value = loop_count.value-1 %}
 
+      {% endfor %}
 
+    {% else %}
+    
+      {% set total_transformations.count = total_transformations.count+1 %}
+      
+      , transformation_{{ loop_count.value|string }} as (
+          
+          {{ build_ctes(path_transform_name, transform_param, model_type) }}
+
+        {%- if loop_count.value == 1 %}
+        from trim_long_path_cte
+        )
+        {% else %}
+        -- build cte names dynamically based on loop count / previous_cte for the loop to work regardless of array items
+        from transformation_{{ previous_cte.value|string }}
+        )
+        {% endif %}
+        {% set loop_count.value = loop_count.value + 1 %}
+      
+    {% endif %}
   {% endfor %}
 
   , path_transforms as (
@@ -186,17 +183,17 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
         cv_path_start_tstamp,
         revenue,
       {% endif %}
-      {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
+      channel_path,
       channel_transformed_path,
-      {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
+      campaign_path,
       campaign_transformed_path
 
   -- the last cte will always equal to the total transformations unless there is no item there
-  {% if total_transformations > 0 %}
-    from transformation_{{ total_transformations }}
+  {% if total_transformations.count > 0 %}
+    from transformation_{{ total_transformations.count }}
 
   {% else %}
-    from {{ source_cte }}
+    from trim_long_path_cte
   {% endif %}
   )
 

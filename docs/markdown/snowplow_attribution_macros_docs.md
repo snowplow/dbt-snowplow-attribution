@@ -103,7 +103,7 @@ Error message, if it fails one of the checks.
 {% docs macro_path_transformation %}
 
 {% raw %}
- Macro to execute the indvidual path_transformation specified as a parameter.
+ Macro to execute the individual path_transformation specified as a parameter.
 
 #### Returns
 
@@ -132,12 +132,12 @@ The sql with the missing cte's that take care of path transformations.
 
 #### Usage
 
-It is used by the transform_paths() macro for the transformation cte sql code build. It takes a transformation type as a parameter and its optional argument, if exists. The E.g.
+It is used by the transform_paths() macro for the transformation cte sql code build. It takes a parameter to refer to which model it is used in (either conversions or non_conversions)
 
 ```sql
 with base_data as (...),
 
-{{ transform_paths('conversions', 'base_data') }}
+{{ transform_paths('conversions') }}
 
 select * from path_transforms
 ```
