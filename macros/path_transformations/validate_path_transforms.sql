@@ -6,6 +6,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 #}
 
 
+-- validate the values in dictionary variable 'snowplow__path_transforms' from dbt_project.yml
 
 {% macro validate_path_transforms() %}
   {{ return(adapter.dispatch('validate_path_transforms', 'snowplow_attribution')()) }}
