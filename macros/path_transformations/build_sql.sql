@@ -8,14 +8,14 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 /* macro is for spark only */
 /* Macro to remove complexity from model "transform_paths" for building spark CTEs. */
 
-{% macro build_ctes(path_transform_name, parameter, model_type) %}
-  {{ return(adapter.dispatch('build_ctes', 'snowplow_attribution')(path_transform_name, parameter, model_type)) }}
+{% macro build_sql(path_transform_name, parameter, model_type) %}
+  {{ return(adapter.dispatch('build_sql', 'snowplow_attribution')(path_transform_name, parameter, model_type)) }}
 {% endmacro %}
 
-{% macro default__build_ctes(path_transform_name, parameter, model_type) %}
+{% macro default__build_sql(path_transform_name, parameter, model_type) %}
 {% endmacro %}
 
-{% macro spark__build_ctes(path_transform_name, parameter, model_type) %}
+{% macro spark__build_sql(path_transform_name, parameter, model_type) %}
 
   select
     customer_id,
