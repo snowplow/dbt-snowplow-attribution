@@ -33,7 +33,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if var('snowplow__path_transforms').items() %}
       -- 1. do transformations on channel_transformed_path:
-      -- reverse transormation due to nested functions, items to be processed from left to right
+      -- reverse transformation due to nested functions, items to be processed from left to right
       {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
 
         {% if transform_param %}
@@ -67,7 +67,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if var('snowplow__path_transforms').items() %}
     -- 2. do transformations on campaign_transformed_path:
-      -- reverse transormation due to nested functions, items to be processed from left to right
+      -- reverse transformation due to nested functions, items to be processed from left to right
 
       {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
 
@@ -116,7 +116,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
   {% set previous_cte = namespace(value=null) %}
   
 
-  -- unlike for adapters using UDFS, reverse transormation is not needed as ctes will process items their params in order
+  -- unlike for adapters using UDFS, reverse transformation is not needed as ctes will process items their params in order
   {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
 
     {%- if loop_count.value == 1 %}

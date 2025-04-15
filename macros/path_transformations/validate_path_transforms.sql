@@ -30,7 +30,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       {% endif %}
 
       {% if transform_param == [] %}
-        {%- do exceptions.raise_compiler_error("Snowplow Error: An empty list is provided for transform - '"+path_transform_name+"' - Please provide at least one list member.") %}
+        {%- do exceptions.raise_compiler_error("Snowplow Error: An empty list is provided for transformation - '"+path_transform_name+"' - Please provide at least one list member.") %}
       {% endif %}
 
     {% endif %}
