@@ -36,7 +36,7 @@
     {% set is_below_limit = result[0][0] %}
     {% if is_below_limit == True %}
       {{ exceptions.raise_compiler_error("Snowplow Error: The timestamp of the last visit in the path source: " ~ last_path_tstamp ~ 
-      " plus the snowplow__path_lookback_days " ~ var('snowplow__path_lookback_days') ~ " is lower than the timestamp of the last conversion in the conversion source" ~ last_processed_cv_tstamp ~ 
+      " plus the snowplow__path_lookback_days " ~ var('snowplow__path_lookback_days') ~ " is lower than the timestamp of the last conversion in the conversion source" ~ last_cv_tstamp ~ 
       " Please make sure you have updated downstream sources before proceeding."
       ) }}
     {% endif %}
