@@ -1,3 +1,35 @@
+snowplow-attribution 0.5.0 (2025-04-16)
+---------------------------------------
+## Summary
+This release enables passing multiple path transformations as dictionary values for transformations enabled in `dbt_project.yml` using the variable `snowplow__path_transforms`.
+
+It is specifically related to transformations `remove_if_not_all` and `remove_if_last_and_not_all`.
+
+### Usage example
+```yml
+snowplow__path_transforms: {'exposure_path': null, 'remove_if_not_all': ['placeholder_transformation_1', 'placeholder_transformation_2'], 'remove_if_last_and_not_all': ['placeholder_transformation_3', 'placeholder_transformation_4']}
+```
+
+## Features
+- Allow multiple path transformation parameters
+
+## Fixes
+- Fix warning message in source checks macro
+- Fix trim_long_path transformation
+
+## 🚨 Breaking Changes 🚨
+- From now on the `snowplow__path_transforms` variable parameters only accept non-empty arrays for `remove_if_last_and_not_all` and `remove_if_not_all` variables instead of strings, please your variable overwrites in your dbt_project.yml accordingly. Previously you could only remove one specific channel or campaign, now you can do multiple, if needed.
+
+```yml title="dbt_project.yml"
+vars:
+  snowplow_attribution:
+    snowplow__path_transforms: {'exposure_path': null, 'remove_if_last_and_not_all': ['channel_to_remove_1', 'campaign_to_remove_1', 'campaign_to_remove_2']}
+  ```
+
+## Upgrading
+Update the snowplow-attribution version in your `packages.yml` file. For existing users, please follow the migration guide [here](https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/migration-guides/attribution/#upgrading-to-050).
+
+
 snowplow-attribution 0.4.0 (2024-10-15)
 ---------------------------------------
 ## Summary
@@ -11,6 +43,7 @@ This release extends support to Apache Spark with the Iceberg file format and up
 
 ## Upgrading
 Update the snowplow-attribution version in your `packages.yml` file.
+
 
 snowplow-attribution 0.3.0 (2024-07-26)
 ---------------------------------------
