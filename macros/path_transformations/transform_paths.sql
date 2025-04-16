@@ -14,7 +14,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__transform_paths(model_type) %}
 
-  {% set allowed_path_transforms = ['exposure_path', 'first_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
+  {{ validate_path_transforms() }}
 
   , path_transforms as (
 
@@ -33,11 +33,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if var('snowplow__path_transforms').items() %}
       -- 1. do transformations on channel_transformed_path:
-      -- reverse transormation due to nested functions, items to be processed from left to right
+      -- reverse transformation due to nested functions, items to be processed from left to right
       {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
-        {% if path_transform_name not in allowed_path_transforms %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
+
         {% if transform_param %}
           {% for _ in range(transform_param|length) %}
             {{target.schema}}.{{path_transform_name}}(
@@ -69,12 +67,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if var('snowplow__path_transforms').items() %}
     -- 2. do transformations on campaign_transformed_path:
-      -- reverse transormation due to nested functions, items to be processed from left to right
+      -- reverse transformation due to nested functions, items to be processed from left to right
 
       {% for path_transform_name, transform_param in var('snowplow__path_transforms').items()|reverse %}
-        {% if path_transform_name not in allowed_path_transforms %}
-          {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
-        {% endif %}
+
         {% if transform_param %}
           {% for _ in range(transform_param|length) %}
             {{target.schema}}.{{path_transform_name}}(
@@ -112,13 +108,15 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro spark__transform_paths(model_type) %}
 
+  {{ validate_path_transforms() }}
+
   -- set namespace to define as global variables for the loop to work
   {% set loop_count = namespace(value=1) %}
   {% set total_transformations = namespace(count=0) %} 
   {% set previous_cte = namespace(value=null) %}
   
 
-  -- unlike for adapters using UDFS, reverse transormation is not needed as ctes will process items their params in order
+  -- unlike for adapters using UDFS, reverse transformation is not needed as ctes will process items their params in order
   {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
 
     {%- if loop_count.value == 1 %}
@@ -135,7 +133,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
         , transformation_{{ loop_count.value|string }} as (
           
-            {{ build_ctes(path_transform_name, parameter, model_type) }}
+            {{ build_sql(path_transform_name, parameter, model_type) }}
 
         {%- if loop_count.value == 1 %}
          from trim_long_path_cte
@@ -156,7 +154,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
       
       , transformation_{{ loop_count.value|string }} as (
           
-          {{ build_ctes(path_transform_name, transform_param, model_type) }}
+          {{ build_sql(path_transform_name, transform_param, model_type) }}
 
         {%- if loop_count.value == 1 %}
         from trim_long_path_cte
