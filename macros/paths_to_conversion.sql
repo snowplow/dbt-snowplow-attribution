@@ -134,17 +134,17 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     {% endif %}
 
     {% if var('snowplow__channels_to_include') %}
-      -- Filters out any unwanted channels
+      -- Only keep wanted channels
       and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
     {% endif %}
     
     {% if var('snowplow__campaigns_to_exclude') %}
-      -- Filters out any unwanted channels
+      -- Filters out any unwanted campaigns
       and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
     {% endif %}
 
     {% if var('snowplow__campaigns_to_include') %}
-      -- Filters out any unwanted channels
+      -- Only keep wanted campaigns
       and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}
     
@@ -319,17 +319,17 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     {% endif %}
 
     {% if var('snowplow__channels_to_include') != [] %}
-      -- Filters out any unwanted channels
+      -- Only keep wanted channels
       and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
     {% endif %}
 
     {% if var('snowplow__campaigns_to_exclude') != [] %}
-      -- Filters out any unwanted channels
+      -- Filters out any unwanted campaigns
       and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
     {% endif %}
 
     {% if var('snowplow__campaigns_to_include') != [] %}
-      -- Filters out any unwanted channels
+      -- Only keep wanted campaigns
       and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
     {% endif %}
     
