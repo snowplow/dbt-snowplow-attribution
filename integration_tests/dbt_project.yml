@@ -68,7 +68,8 @@ vars:
     snowplow__channels_to_exclude: ['fake_channel']
     snowplow__attribution_start_date: '2023-01-01'
     snowplow__spend_source: "{{ ref('spend_source') }}"
-    
+    # license
+    snowplow__license_accepted: true
 
 seeds:
   quote_columns: false
