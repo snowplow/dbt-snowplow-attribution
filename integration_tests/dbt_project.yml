@@ -47,6 +47,7 @@ models:
 
 vars:
   snowplow__enable_paths_to_non_conversion: true
+  snowplow__license_accepted: true
  
   snowplow_unified:
     snowplow__events: "{{ ref('snowplow_unified_events_stg') }}"
