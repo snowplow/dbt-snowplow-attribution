@@ -60,6 +60,8 @@ vars:
     snowplow__conversion_events: [{"name": "transactions","condition": "tr_total > 0","value": "tr_total"}]
     snowplow__conversion_stitching: false
     snowplow__enable_conversions: true
+    # license
+    snowplow__license_accepted: true
   snowplow_attribution:
     snowplow__conversion_hosts: ['poplindata.com']
     snowplow__path_lookback_steps: 0
