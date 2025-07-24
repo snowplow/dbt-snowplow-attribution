@@ -44,6 +44,7 @@ vars:
     snowplow__conversion_clause: 'cv_value > 0 and ev.user_identifier is not null'
     
     # Variables that change the drop and recompute report tables only
+    snowplow__license_accepted: false
     snowplow__conversion_window_start_date: '' # an explicit conversion window start date overwrite
     snowplow__conversion_window_end_date: '' # an explicit conversion window end date overwrite
     snowplow__conversion_window_days: 30 # last complete nth number of days (calculated from the last processed path in the path source) to dynamically update the conversion_window_start_date and end_date with. Will only apply if both variables are left as an empty string.
@@ -57,7 +58,9 @@ vars:
     snowplow__grant_select_to: []
     snowplow__grant_schema_usage: true
 
-on-run-start: "{{ create_udfs() }}"
+on-run-start:
+  - "{{ snowplow_utils.license_check(var('snowplow__license_accepted')) }}"
+  - "{{ create_udfs() }}"
 
 on-run-end:
   - "{{ snowplow_utils.grant_usage_on_schemas_built_into(var('snowplow__grant_schemas', true)) }}"
