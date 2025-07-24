@@ -58,7 +58,9 @@ vars:
     snowplow__grant_select_to: []
     snowplow__grant_schema_usage: true
 
-on-run-start: "{{ create_udfs() }}"
+on-run-start:
+  - "{{ snowplow_utils.license_check(var('snowplow__license_accepted')) }}"
+  - "{{ create_udfs() }}"
 
 on-run-end:
   - "{{ snowplow_utils.grant_usage_on_schemas_built_into(var('snowplow__grant_schemas', true)) }}"
