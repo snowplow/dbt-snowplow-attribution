@@ -44,6 +44,7 @@ vars:
     snowplow__conversion_clause: 'cv_value > 0 and ev.user_identifier is not null'
     
     # Variables that change the drop and recompute report tables only
+    snowplow__license_accepted: false
     snowplow__conversion_window_start_date: '' # an explicit conversion window start date overwrite
     snowplow__conversion_window_end_date: '' # an explicit conversion window end date overwrite
     snowplow__conversion_window_days: 30 # last complete nth number of days (calculated from the last processed path in the path source) to dynamically update the conversion_window_start_date and end_date with. Will only apply if both variables are left as an empty string.
