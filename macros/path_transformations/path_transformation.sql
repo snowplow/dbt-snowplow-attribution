@@ -22,6 +22,9 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% endmacro %}
 
+{% macro redshift__path_transformation(transformation_type, transform_param, field_alias) %}
+{% endmacro %}
+
 {% macro spark__path_transformation(transformation_type, transform_param, field_alias) %}
 
   {% if transformation_type == 'unique_path' %}

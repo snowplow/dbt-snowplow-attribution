@@ -105,6 +105,145 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% endmacro %}
 
+{% macro redshift__transform_paths(model_type) %}
+
+{% if var('snowplow__path_transforms') | length > 1 %}
+  {%- do exceptions.raise_compiler_error(
+    "Snowplow Error: Redshift does not support chained path transforms due to SQL limitations. Please configure only one transform in snowplow__path_transforms. Other adapters support chaining."
+  ) %}
+{% endif %}
+
+  {% set partition_by = 'cv_id' if model_type == 'conversions' else 'customer_id' %}
+
+  , analytic_windows as (
+    select
+      {% if model_type == 'conversions' %}
+        cv_id,
+        event_id,
+        customer_id,
+        cv_tstamp,
+        cv_type,
+        cv_path_start_tstamp,
+        revenue,
+      {% else %}
+        customer_id,
+      {% endif %}
+      channel,
+      campaign,
+      visit_start_tstamp,
+      row_number() over (partition by {{ partition_by }} order by visit_start_tstamp desc) as reverse_step,
+      lag(channel)  over (partition by {{ partition_by }} order by visit_start_tstamp) as prev_channel,
+      lag(campaign) over (partition by {{ partition_by }} order by visit_start_tstamp) as prev_campaign,
+      row_number() over (partition by {{ partition_by }}, channel  order by visit_start_tstamp) as channel_occ,
+      row_number() over (partition by {{ partition_by }}, campaign order by visit_start_tstamp) as campaign_occ
+    from vertical_path_base
+  )
+
+  , base_windows as (
+    select
+      *,
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
+        {% if path_transform_name == 'remove_if_not_all' %}
+          {% for parameter in transform_param %}
+            sum(case when channel  != '{{ parameter }}' then 1 else 0 end) over (partition by {{ partition_by }}) as channel_non_param_count,
+            sum(case when campaign != '{{ parameter }}' then 1 else 0 end) over (partition by {{ partition_by }}) as campaign_non_param_count,
+          {% endfor %}
+        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
+          {% for parameter in transform_param %}
+            max(case when channel  != '{{ parameter }}' then visit_start_tstamp end) over (partition by {{ partition_by }}) as last_non_param_channel_tstamp,
+            max(case when campaign != '{{ parameter }}' then visit_start_tstamp end) over (partition by {{ partition_by }}) as last_non_param_campaign_tstamp,
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+      1 as _dummy
+    from analytic_windows
+  )
+
+  -- only trim_long_path filtering here, no transform filtering
+  , trim_long_path_cte as (
+    select *
+    from base_windows
+    where 1=1
+    {% if var('snowplow__path_lookback_steps') and var('snowplow__path_lookback_steps') > 0 %}
+      and reverse_step <= {{ var('snowplow__path_lookback_steps') }}
+    {% endif %}
+  )
+
+  -- Note: Redshift listagg silently drops empty strings unlike other adapters.
+  -- Empty string channel values will be excluded from path strings on Redshift.
+  -- This is a known limitation of Redshift's listagg function.
+  , path_transforms as (
+    select
+      {% if model_type == 'conversions' %}
+        cv_id,
+        event_id,
+        customer_id,
+        cv_tstamp,
+        cv_type,
+        cv_path_start_tstamp,
+        revenue,
+      {% else %}
+        customer_id,
+      {% endif %}
+      listagg(channel,  ' > ') within group (order by visit_start_tstamp) as channel_path,
+      listagg(campaign, ' > ') within group (order by visit_start_tstamp) as campaign_path,
+
+      {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
+
+        {% if path_transform_name == 'exposure_path' %}
+          listagg(case when prev_channel is null or channel != prev_channel then channel end, ' > ')
+            within group (order by visit_start_tstamp) as channel_transformed_path,
+          listagg(case when prev_campaign is null or campaign != prev_campaign then campaign end, ' > ')
+            within group (order by visit_start_tstamp) as campaign_transformed_path
+
+        {% elif path_transform_name == 'unique_path' %}
+          listagg(channel, ' > ') within group (order by visit_start_tstamp) as channel_transformed_path,
+          listagg(campaign, ' > ') within group (order by visit_start_tstamp) as campaign_transformed_path
+
+        {% elif path_transform_name == 'first_path' %}
+          listagg(case when channel_occ = 1 then channel end, ' > ')
+            within group (order by visit_start_tstamp) as channel_transformed_path,
+          listagg(case when campaign_occ = 1 then campaign end, ' > ')
+            within group (order by visit_start_tstamp) as campaign_transformed_path
+
+        {% elif path_transform_name == 'remove_if_not_all' %}
+          {% for parameter in transform_param %}
+            listagg(case when channel != '{{ parameter }}' or channel_non_param_count = 0 then channel end, ' > ')
+              within group (order by visit_start_tstamp) as channel_transformed_path,
+            listagg(case when campaign != '{{ parameter }}' or campaign_non_param_count = 0 then campaign end, ' > ')
+              within group (order by visit_start_tstamp) as campaign_transformed_path
+          {% endfor %}
+
+        {% elif path_transform_name == 'remove_if_last_and_not_all' %}
+          {% for parameter in transform_param %}
+            listagg(case when channel != '{{ parameter }}' or last_non_param_channel_tstamp is null or visit_start_tstamp <= last_non_param_channel_tstamp then channel end, ' > ')
+              within group (order by visit_start_tstamp) as channel_transformed_path,
+            listagg(case when campaign != '{{ parameter }}' or last_non_param_campaign_tstamp is null or visit_start_tstamp <= last_non_param_campaign_tstamp then campaign end, ' > ')
+              within group (order by visit_start_tstamp) as campaign_transformed_path
+          {% endfor %}
+
+        {% else %}
+          {%- do exceptions.raise_compiler_error(
+            "Snowplow Error: the path transform - '" ~ path_transform_name ~ "' - is not supported. Please use one of: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path"
+          ) %}
+        {% endif %}
+
+      {% endfor %}
+
+      {% if var('snowplow__path_transforms') | length == 0 %}
+        listagg(channel, ' > ') within group (order by visit_start_tstamp) as channel_transformed_path,
+        listagg(campaign, ' > ') within group (order by visit_start_tstamp) as campaign_transformed_path
+      {% endif %}
+
+    from trim_long_path_cte
+    {% if model_type == 'conversions' %}
+      group by 1,2,3,4,5,6,7
+    {% else %}
+      group by 1
+    {% endif %}
+  )
+
+{% endmacro %}
 
 {% macro spark__transform_paths(model_type) %}
 
