@@ -107,11 +107,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro redshift__transform_paths(model_type) %}
 
-{% if var('snowplow__path_transforms') | length > 1 %}
-  {%- do exceptions.raise_compiler_error(
-    "Snowplow Error: Redshift does not support chained path transforms due to SQL limitations. Please configure only one transform in snowplow__path_transforms. Other adapters support chaining."
-  ) %}
-{% endif %}
+  {{ validate_path_transforms() }}
 
   {% set partition_by = 'cv_id' if model_type == 'conversions' else 'customer_id' %}
 
