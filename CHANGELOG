@@ -1,3 +1,19 @@
+snowplow-attribution 0.6.0 (2026-03-17)
+---------------------------------------
+## Summary
+This release introduces a workaround for Redshift deprecating python UDFs which were essential for calculating the path transformations. This release bypasses the need by relying on pure SQL instead.
+
+Please note that one limitation for now is that we only allow one path transformation for Redshift due to sql complexities.
+
+## Fixes
+- Remove Redshift UDFs
+
+## 🚨 Breaking Changes 🚨
+- Please note that Redshift users are only allowed to have one path transformation defined in the `snowplow__path_transforms` var once they migrate.
+
+## Upgrading
+- Update the snowplow-attribution version in your `packages.yml` file.
+
 snowplow-attribution 0.5.1 (2025-07-24)
 ---------------------------------------
 ## Summary
