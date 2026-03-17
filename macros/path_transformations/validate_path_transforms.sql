@@ -38,3 +38,41 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 
 {% endmacro %}
+
+
+{% macro redshift__validate_path_transforms() %}
+
+  {% set allowed_path_transforms = ['exposure_path', 'first_path', 'remove_if_last_and_not_all', 'remove_if_not_all', 'unique_path'] %}
+
+  {% if var('snowplow__path_transforms') | length > 1 %}
+    {%- do exceptions.raise_compiler_error(
+      "Snowplow Error: Redshift does not support chained path transforms due to SQL limitations. Please configure only one transform in snowplow__path_transforms. Other adapters support chaining."
+    ) %}
+  {% endif %}
+
+  {% for path_transform_name, transform_param in var('snowplow__path_transforms').items() %}
+
+    {% if path_transform_name not in allowed_path_transforms %}
+      {%- do exceptions.raise_compiler_error("Snowplow Error: the path transform - '"+path_transform_name+"' - is not supported. Please refer to the Snowplow docs on tagging. Please use one of the following: exposure_path, first_path, remove_if_last_and_not_all, remove_if_not_all, unique_path") %}
+    {% endif %}
+
+    {% if path_transform_name in ['remove_if_not_all', 'remove_if_last_and_not_all'] %}
+
+      -- raise exception if transform_param is not of data type list for 'remove_if_not_all' and 'remove_if_last_and_not_all' path transforms
+      {% if not (transform_param is iterable and transform_param is sequence and transform_param is not mapping and transform_param is not string) %}
+        {%- do exceptions.raise_compiler_error("Snowplow Error: the dict value data type for both 'remove_if_not_all' and 'remove_if_last_and_not_all' path transforms needs to be a list. The provided - '"+transform_param+"' - is invalid.") %}
+      {% endif %}
+
+      {% if transform_param == [] %}
+        {%- do exceptions.raise_compiler_error("Snowplow Error: An empty list is provided for transformation - '"+path_transform_name+"' - Please provide at least one list member.") %}
+      {% endif %}
+
+      {% if transform_param | length > 1 %}
+        {%- do exceptions.raise_compiler_error("Snowplow Error: Redshift does not support multiple parameters for '" + path_transform_name + "' due to duplicate column name limitations. Please provide exactly one list member. Other adapters support multiple parameters.") %}
+      {% endif %}
+
+    {% endif %}
+  {% endfor %}
+
+
+{% endmacro %}

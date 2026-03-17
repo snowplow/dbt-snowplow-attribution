@@ -5,6 +5,12 @@ and you may not use this file except in compliance with the Snowplow Community L
 You may obtain a copy of the Snowplow Community License Version 1.0 at https://docs.snowplow.io/community-license-1.0
 #}
 
+{{
+  config(
+    enabled = (target.type != 'redshift')
+  )
+}}
+
 with data as (
 
   select 'Example > Video > Direct > Direct' as path
@@ -35,18 +41,6 @@ with data as (
 
 )
 
-{% if target.type == 'redshift' %}
-
-, final_form as (
-
-  select
-     path as transformed_path
-
-  from data d
-)
-
-{% else %}
-
 , final_form as (
 
   select
@@ -54,8 +48,6 @@ with data as (
 
   from data d
 )
-
-{% endif %}
 
 select
 

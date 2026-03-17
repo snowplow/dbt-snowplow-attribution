@@ -99,10 +99,13 @@ with expected_result as (
 )
 
 {% if target.type == 'redshift' %}
-
-select * from expected_result
-
+  -- exclude empty string cases as Redshift listagg drops empty strings
+  select * from expected_result
+  where raw_array != ''
+  and raw_array != 'Example > Video > '
+  
 {% else %}
+
 
  , arrays as (
 
@@ -127,7 +130,7 @@ select
   {{ snowplow_utils.get_array_to_string('exposure_path', 'a', delimiter=' > ') }} as exposure_path,
   {{ snowplow_utils.get_array_to_string('first_path', 'a', delimiter=' > ') }} as first_path,
   {{ snowplow_utils.get_array_to_string('remove_if_not_all', 'a', delimiter=' > ') }} as remove_if_not_all,
-  {{ snowplow_utils.get_array_to_string('remove_if_last_and_not_all', 'a', delimiter=' > ') }} as remove_if_last_and_not_all
+  {{ snowplow_utils.get_array_to_string('remove_if_last_and_not_all', 'a', delimiter=' > ') }} as remove_if_last_and_not_all  
 
 from arrays a
 

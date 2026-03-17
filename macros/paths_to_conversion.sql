@@ -130,7 +130,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     
     {% if var('snowplow__channels_to_exclude') %}
       -- Filters out any unwanted channels
-      and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+      and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
     {% endif %}
 
     {% if var('snowplow__channels_to_include') %}
@@ -290,70 +290,43 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
   )
 
-  , string_aggs as (
-    
-    select
-      c.cv_id,
-      c.event_id,
-      c.customer_id,
-      c.cv_tstamp, 
-      c.cv_type,
-      {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days"), 'c.cv_tstamp') }} cv_path_start_tstamp,
-      c.revenue,
-      {{ snowplow_utils.get_string_agg('channel', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as channel,
-      {{ snowplow_utils.get_string_agg('campaign', 'p', separator=' > ', sort_numeric=false, order_by_column='visit_start_tstamp', order_by_column_prefix='p') }} as campaign
-    
-    from conversions c
-
-    inner join paths p
+  , vertical_path_base as (
+  select
+    c.cv_id,
+    c.event_id,
+    c.customer_id,
+    c.cv_tstamp,
+    c.cv_type,
+    {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days"), 'c.cv_tstamp') }} as cv_path_start_tstamp,
+    c.revenue,
+    p.channel,
+    p.campaign,
+    p.visit_start_tstamp
+  from conversions c
+  inner join paths p
     on c.customer_id = p.customer_id
-    
-    and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
-    and {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }}  >= 0
-    
-    where 1 = 1
-    
-    {% if var('snowplow__channels_to_exclude') != [] %}
-      -- Filters out any unwanted channels
-      and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
-    {% endif %}
+  where {{ datediff('p.visit_start_tstamp', 'c.cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
+    and p.visit_start_tstamp <= c.cv_tstamp
 
-    {% if var('snowplow__channels_to_include') != [] %}
-      -- Filters out any unwanted channels
-      and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
-    {% endif %}
+  {% if var('snowplow__channels_to_exclude') %}
+    and (p.channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or p.channel is null)
+  {% endif %}
 
-    {% if var('snowplow__campaigns_to_exclude') != [] %}
-      -- Filters out any unwanted channels
-      and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
-    {% endif %}
+  {% if var('snowplow__channels_to_include') %}
+    and p.channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+  {% endif %}
 
-    {% if var('snowplow__campaigns_to_include') != [] %}
-      -- Filters out any unwanted channels
-      and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
-    {% endif %}
-    
-    {{ dbt_utils.group_by(n=7) }}
-  )
+  {% if var('snowplow__campaigns_to_exclude') %}
+    and (p.campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or p.campaign is null)
+  {% endif %}
 
-  , strings as (
-
-    select
-      cv_id,
-      event_id,
-      customer_id,
-      cv_tstamp,
-      cv_type,
-      cv_path_start_tstamp,
-      revenue,
-      channel as channel_path,
-      campaign as campaign_path
-
-    from string_aggs s
-  )
+  {% if var('snowplow__campaigns_to_include') %}
+    and p.campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
+  {% endif %}
+)
   
-, trim_long_path_cte as (
-  
+  {{ transform_paths('conversions') }}
+
   select
     cv_id,
     event_id,
@@ -362,17 +335,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     cv_type,
     cv_path_start_tstamp,
     revenue,
-    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
-    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
-    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
-    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
-
-  from strings
-  )
-
-    {{ transform_paths('conversions') }}
-
-  select *
-  from path_transforms p
+    channel_path,
+    channel_transformed_path,
+    campaign_path,
+    campaign_transformed_path
+  from path_transforms t
 
 {% endmacro %}
