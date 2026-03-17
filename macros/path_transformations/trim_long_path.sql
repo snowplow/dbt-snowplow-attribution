@@ -19,6 +19,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% endmacro %}
 
+{% macro redshift__trim_long_path(array_column, lookback_steps=var('snowplow__path_lookback_steps')) %}
+  -- trim_long_path is handled at row level in redshift__transform_paths via reverse_step filter
+  {{ array_column }}
+{% endmacro %}
+
 {% macro spark__trim_long_path(array_column, lookback_steps=var('snowplow__path_lookback_steps')) %}
 
   case when array_size({{ array_column }}) <= {{ lookback_steps }} then {{ array_column }}
@@ -33,3 +38,4 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {{target.schema}}.trim_long_path({{ array_column }}, {{ lookback_steps }})
 
 {% endmacro %}
+

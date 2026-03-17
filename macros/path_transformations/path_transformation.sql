@@ -22,6 +22,14 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% endmacro %}
 
+{% macro redshift__path_transformation(transformation_type, transform_param, field_alias) %}
+
+    {{ exceptions.raise_compiler_error(
+      "Snowplow Error: Path transformations on Redshift are handled via redshift__transform_paths / LISTAGG in the main model SQL and not via this macro. 
+      For unit testing please use the dedicated test in the integration testing module."
+      ) }}
+{% endmacro %}
+
 {% macro spark__path_transformation(transformation_type, transform_param, field_alias) %}
 
   {% if transformation_type == 'unique_path' %}

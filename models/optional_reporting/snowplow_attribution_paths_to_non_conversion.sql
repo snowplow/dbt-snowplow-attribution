@@ -94,7 +94,7 @@ with paths as (
 
   {% if var('snowplow__channels_to_exclude') %}
     -- Filters out any unwanted channels
-    and channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }})
+    and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
   {% endif %}
 
   {% if var('snowplow__channels_to_include') %}
@@ -170,37 +170,51 @@ select
 from path_transforms t
 
 {% else %}
+-- =========================================================
+-- Redshift path (string-based)
+-- Filters are re-applied on vertical_path_base to prevent
+-- excluded channels/campaigns re-entering via the raw
+-- paths join.
+-- =========================================================
 
-, strings as (
+, vertical_path_base as (
 
   select
-    customer_id,
-    channel as channel_path,
-    channel as channel_transformed_path,
-    campaign as campaign_path,
-    campaign as campaign_transformed_path
+    n.customer_id,
+    p.channel,
+    p.campaign,
+    p.visit_start_tstamp
 
-  from string_aggs s
+  from non_conversions n
+
+  inner join paths p
+    on n.customer_id = p.customer_id
+    and {{ datediff('p.visit_start_tstamp', 'n.non_cv_tstamp', 'day') }} <= {{ var('snowplow__path_lookback_days') }}
+    and {{ datediff('p.visit_start_tstamp', 'n.non_cv_tstamp', 'day') }} >= 0
+
+  where 1=1
+
+  {% if var('snowplow__channels_to_exclude') %}
+    and (channel not in ({{ snowplow_utils.print_list(var('snowplow__channels_to_exclude')) }}) or channel is null)
+  {% endif %}
+
+  {% if var('snowplow__channels_to_include') %}
+    and channel in ({{ snowplow_utils.print_list(var('snowplow__channels_to_include')) }})
+  {% endif %}
+
+  {% if var('snowplow__campaigns_to_exclude') %}
+    and (campaign not in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_exclude')) }}) or campaign is null)
+  {% endif %}
+
+  {% if var('snowplow__campaigns_to_include') %}
+    and campaign in ({{ snowplow_utils.print_list(var('snowplow__campaigns_to_include')) }})
+  {% endif %}
 
 )
 
-, trim_long_path_cte as (
-  
-  select
-    customer_id,
-    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_path,
-    {{ trim_long_path('channel_path', var('snowplow__path_lookback_steps')) }} as channel_transformed_path,
-    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_path,
-    {{ trim_long_path('campaign_path', var('snowplow__path_lookback_steps')) }} as campaign_transformed_path
-
-  from strings
-)
-
-  {{ transform_paths('non_conversions') }}
-
+{{ transform_paths('non_conversions') }}
 
 select *
 from path_transforms t
 
 {% endif %}
-

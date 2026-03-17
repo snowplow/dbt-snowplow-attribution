@@ -33,11 +33,11 @@ for db in ${DATABASES[@]}; do
   eval "dbt run --select snowplow_unified_events_stg spend_source --full-refresh --target $db" || exit 1;
 
   if [[ $db == "redshift" ]]; then
-  
+
   echo "Snowplow Attribution integration tests: Execute page_view_context_stg for Redshift only"
 
   eval "dbt run --select snowplow_unified_page_view_context_stg --full-refresh --target $db" || exit 1;
-  
+
   fi
   
   echo "Snowplow Unified: Execute models - 1/2"
