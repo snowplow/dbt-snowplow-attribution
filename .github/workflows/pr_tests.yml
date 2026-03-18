@@ -69,9 +69,9 @@ jobs:
         # Run tests from integration_tests sub dir
         working-directory: ./integration_tests
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        dbt_version: ["1.*"]
+        dbt_version: ["1.8.*"]
         warehouse: ["bigquery", "snowflake", "databricks", "redshift", "spark_iceberg"] # TODO: Add RS self-hosted runner
 
     steps:
@@ -90,7 +90,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_SNOWPLOWCI_READ_USERNAME }}
           password: ${{ secrets.DOCKERHUB_SNOWPLOWCI_READ_PASSWORD }}
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           role-duration-seconds: 10800
@@ -117,12 +117,12 @@ jobs:
          echo "DEFAULT_TARGET=${{matrix.warehouse}}" >> $GITHUB_ENV
 
       - name: Python setup
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-         python-version: "3.8.x"
+         python-version: "3.9.x"
 
       - name: Pip cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ matrix.dbt_version }}-${{env.WAREHOUSE_PLATFORM}}
@@ -153,14 +153,14 @@ jobs:
       - name: Build and start Spark cluster
         working-directory: .github/workflows/spark_deployment
         run: |
-          docker-compose up -d
+          docker-compose up -d --build
           echo "Waiting for Spark services to start..."
           sleep 90
         if: ${{env.WAREHOUSE_PLATFORM == 'spark'}}
-    
+
       - name: "Pre-test: Drop ci schemas"
         run: |
-          dbt run-operation post_ci_cleanup --target ${{matrix.warehouse}}
+          dbt --debug run-operation post_ci_cleanup --target ${{matrix.warehouse}}
 
       - name: Run tests
         run: ./.scripts/integration_test.sh -d ${{matrix.warehouse}}
