@@ -1,7 +1,7 @@
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:17-jre
 
 # Set environment variables
-ENV SPARK_VERSION=3.5.1
+ENV SPARK_VERSION=3.5.8
 ENV HADOOP_VERSION=3.3.4
 ENV ICEBERG_VERSION=1.4.2
 ENV AWS_SDK_VERSION=1.12.581
