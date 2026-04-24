@@ -45,7 +45,7 @@ models:
       - name: cv_type
         description: The type of conversion event
       - name: cv_path_start_tstamp
-        description: Timestamp of the conversion event - path_lookback_days variable denoting the minimum start_tstamp of the visit prior to conversion
+        description: The earliest possible timestamp a visit can have to be included in the conversion path, based on the lookback window
       - name: revenue
         description: Revenue associated with the conversion
       - name: channel_path
