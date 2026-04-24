@@ -5,29 +5,26 @@ and you may not use this file except in compliance with the Snowplow Personal an
 You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 at https://docs.snowplow.io/personal-and-academic-license-1.0/
 #}
 
-{{
-  config(
-    materialized='incremental',
-    full_refresh=snowplow_attribution.allow_refresh(),
-    on_schema_change='append_new_columns',
-    unique_key='composite_key',
-    upsert_date_key='cv_tstamp',
-    sort='cv_tstamp',
-    dist='composite_key',
-    partition_by = snowplow_utils.get_value_by_target_type(bigquery_val = {
+{{ config(
+    materialized='incremental', 
+    full_refresh=snowplow_attribution.allow_refresh(), 
+    on_schema_change='append_new_columns', 
+    unique_key='composite_key', 
+    sort='cv_tstamp', 
+    dist='composite_key', 
+    partition_by=snowplow_utils.get_value_by_target_type(bigquery_val = {
       "field": "cv_tstamp",
       "data_type": "timestamp"
-    }, databricks_val='cv_tstamp_date'),
-    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["cv_id","customer_id"], snowflake_val=["to_date(cv_tstamp)"]),
-    tags=["derived"],
-    sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
+    }, databricks_val='cv_tstamp_date'), 
+    cluster_by=snowplow_utils.get_value_by_target_type(bigquery_val=["cv_id","customer_id"], snowflake_val=["to_date(cv_tstamp)"]), 
+    tags=["derived"], 
+    sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')), 
     tblproperties={
       'delta.autoOptimize.optimizeWrite' : 'true',
       'delta.autoOptimize.autoCompact' : 'true'
-    },
-    snowplow_optimize = true
-  )
-}}
+    }, 
+    meta={'upsert_date_key': 'cv_tstamp', 'snowplow_optimize': true}
+) }}
 
 {%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_attribution_incremental_manifest'),'last_processed_cv_tstamp','last_processed_cv_tstamp',true) %}
 

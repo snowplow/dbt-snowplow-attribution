@@ -5,28 +5,25 @@ and you may not use this file except in compliance with the Snowplow Personal an
 You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 at https://docs.snowplow.io/personal-and-academic-license-1.0/
 #}
 
-{{
-  config(
-    materialized='incremental',
-    full_refresh=snowplow_attribution.allow_refresh(),
-    on_schema_change='append_new_columns',
-    unique_key='processed_at',
-    upsert_date_key='processed_at',
-    sort='last_processed_cv_tstamp',
-    dist='processed_at',
-    partition_by = snowplow_utils.get_value_by_target_type(bigquery_val = {
+{{ config(
+    materialized='incremental', 
+    full_refresh=snowplow_attribution.allow_refresh(), 
+    on_schema_change='append_new_columns', 
+    unique_key='processed_at', 
+    sort='last_processed_cv_tstamp', 
+    dist='processed_at', 
+    partition_by=snowplow_utils.get_value_by_target_type(bigquery_val = {
       "field": "cv_tstamp",
       "data_type": "last_processed_cv_tstamp"
-    }, databricks_val='last_processed_cv_tstamp'),
-    tags=["derived"],
-    sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
+    }, databricks_val='last_processed_cv_tstamp'), 
+    tags=["derived"], 
+    sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')), 
     tblproperties={
       'delta.autoOptimize.optimizeWrite' : 'true',
       'delta.autoOptimize.autoCompact' : 'true'
-    },
-    snowplow_optimize = true
-  )
-}}
+    }, 
+    meta={'upsert_date_key': 'processed_at', 'snowplow_optimize': true}
+) }}
 
 with prep as (
   
