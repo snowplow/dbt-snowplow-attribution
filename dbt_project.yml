@@ -68,8 +68,14 @@ models:
     +incremental_strategy: "{{ none if target.type not in ['spark'] else 'merge' }}"
     +schema: "derived"
     +materialized: table
+    +persist_docs:
+      relation: true
+      columns: true
     manifest:
       +schema: "snowplow_manifest"
+      +persist_docs:
+        relation: false
+        columns: false
     optional_reporting:
       +enabled: false
 flags:
