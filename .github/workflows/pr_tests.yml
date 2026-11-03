@@ -153,3 +153,37 @@ jobs:
       - name: "Post-test: Drop ci schemas"
         run: |
           dbt run-operation post_ci_cleanup --target ${{matrix.warehouse}}
+
+      - name: dbt logs on failure
+        if: ${{ failure() }}
+        run: |
+          python - <<'PY'
+          from collections import deque
+          import json
+          import os
+          from pathlib import Path
+
+          log = Path('logs/dbt.log')
+          if not log.exists():
+              print('No dbt log was created.')
+          else:
+              with log.open(errors='replace') as stream:
+                  content = ''.join(deque(stream, maxlen=300))
+              values = set()
+              for name, value in os.environ.items():
+                  if value and (name.startswith(('SNOWFLAKE_', 'DATABRICKS_', 'BIGQUERY_', 'REDSHIFT_', 'POSTGRES_'))
+                                or name in ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN')):
+                      values.update((value, json.dumps(value)[1:-1]))
+                      values.update(value.splitlines())
+              for value in sorted(values, key=len, reverse=True):
+                  if value:
+                      content = content.replace(value, '***')
+              print(content, end='')
+          PY
+
+      - name: Spark logs on failure
+        if: ${{ failure() && env.WAREHOUSE_PLATFORM == 'spark' }}
+        working-directory: .github/workflows/spark_deployment
+        run: |
+          docker compose ps
+          docker compose logs --no-color --tail=200
