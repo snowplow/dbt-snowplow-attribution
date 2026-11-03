@@ -167,8 +167,25 @@ jobs:
           if not log.exists():
               print('No dbt log was created.')
           else:
+              tail = deque(maxlen=300)
+              query_errors = deque(maxlen=2)
+              capturing_query = False
               with log.open(errors='replace') as stream:
-                  content = ''.join(deque(stream, maxlen=300))
+                  for line in stream:
+                      tail.append(line)
+                      if 'Databricks adapter: Exception while trying to execute query' in line:
+                          query_errors.append([line])
+                          capturing_query = True
+                      elif capturing_query:
+                          if line.startswith('Error properties:') or len(query_errors[-1]) >= 100:
+                              capturing_query = False
+                          else:
+                              query_errors[-1].append(line)
+              if query_errors:
+                  content = ''.join(line for block in query_errors for line in block)
+                  content += '\nLast 100 dbt log lines:\n' + ''.join(list(tail)[-100:])
+              else:
+                  content = ''.join(tail)
               values = set()
               for name, value in os.environ.items():
                   if value and (name.startswith(('SNOWFLAKE_', 'DATABRICKS_', 'BIGQUERY_', 'REDSHIFT_', 'POSTGRES_'))
