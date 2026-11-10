@@ -40,6 +40,11 @@ models:
     users:
       +enabled: false
   snowplow_attribution:
+    # CI only: dbt-spark's column-comment step fails over PyHive ('NoneType' object is not iterable in run_query),
+    # so don't persist docs in the test project.
+    +persist_docs:
+      relation: false
+      columns: false
     optional_reporting:
       +enabled: true
 
