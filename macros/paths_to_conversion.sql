@@ -24,7 +24,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
 {%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) %}
 {# Keep the full boundary day: the join uses day differences, and Spark/Databricks select whole conversion dates. #}
-{%- set earliest_path_day = dbt.date_trunc('day', earliest_cv_in_run) %}
+{%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
   with paths as (
     
@@ -57,7 +57,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     and p.user_identifier is not null
 
     {% if is_incremental() %}
-        and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), earliest_path_day) }}
+        and derived_tstamp >= {{ earliest_path_tstamp }}
     {% endif %}
 
     {% if var('snowplow__conversion_hosts') %}
@@ -220,7 +220,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
 {%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) %}
 {# Keep the full boundary day to match the day-based path join below. #}
-{%- set earliest_path_day = dbt.date_trunc('day', earliest_cv_in_run) %}
+{%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
   with paths as (
     
@@ -253,7 +253,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     and p.user_identifier is not null
 
     {% if is_incremental() %}
-      and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), earliest_path_day) }}
+      and derived_tstamp >= {{ earliest_path_tstamp }}
     {% endif %}
 
     {% if var('snowplow__conversion_hosts') != [] %}

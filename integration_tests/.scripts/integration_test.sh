@@ -24,6 +24,9 @@ fi
 
 for db in ${DATABASES[@]}; do
 
+  echo "Snowplow Attribution integration tests: Path lookback boundaries"
+  dbt run-operation test_path_lookback_start --target "$db" || exit 1;
+
   echo "Snowplow Attribution integration tests: Seeding data"
 
   eval "dbt seed --full-refresh --target $db" || exit 1;
