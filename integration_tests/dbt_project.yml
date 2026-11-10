@@ -68,6 +68,10 @@ vars:
     snowplow__channels_to_exclude: ['fake_channel']
     snowplow__attribution_start_date: '2023-01-01'
     snowplow__spend_source: "{{ ref('spend_source') }}"
+    # Late-arrival scenario (integration_test.sh): point paths_to_conversion at small controlled sources.
+    snowplow__conversions_source: "{{ ref('snowplow_attribution_integration_tests', 'late_arrival_conversions') if var('snowplow__late_arrival_test', false) else source('derived', 'snowplow_unified_conversions') }}"
+    snowplow__conversion_path_source: "{{ ref('snowplow_attribution_integration_tests', 'late_arrival_views_seed') if var('snowplow__late_arrival_test', false) else source('derived', 'snowplow_unified_views') }}"
+    snowplow__user_mapping_source: "{{ ref('snowplow_attribution_integration_tests', 'late_arrival_user_mapping_seed') if var('snowplow__late_arrival_test', false) else source('derived', 'snowplow_unified_user_mapping') }}"
 
 
 seeds:
@@ -270,6 +274,31 @@ seeds:
           sum_cv_total_revenue: "{{ 'float64' if target.type in ['bigquery'] else 'float' }}"
           attributed_revenue: "{{ 'float64' if target.type in ['bigquery'] else 'float' }}"
           roas: "{{ 'float64' if target.type in ['bigquery'] else 'float' }}"
+    late_arrival:
+      late_arrival_conversions_seed:
+        +column_types:
+          cv_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          event_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          user_identifier: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          cv_tstamp: timestamp
+          cv_type: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          cv_value: "{{ 'float64' if target.type in ['bigquery'] else 'float' }}"
+          arrives_in_run: "{{ 'int64' if target.type in ['bigquery'] else 'int' }}"
+      late_arrival_views_seed:
+        +column_types:
+          user_identifier: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          derived_tstamp: timestamp
+          start_tstamp: timestamp
+          refr_urlpath: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          mkt_campaign: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          mkt_source: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          mkt_medium: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          page_urlhost: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          view_in_session_index: "{{ 'int64' if target.type in ['bigquery'] else 'int' }}"
+      late_arrival_user_mapping_seed:
+        +column_types:
+          user_identifier: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+          user_id: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
   +quote_columns: false
 
 flags:
