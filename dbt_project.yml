@@ -39,6 +39,7 @@ vars:
     snowplow__spend_source: 'not defined' # Optional, needed for the ROAS calculation of the snowplow_attribution.overview. Should be changed to a table reference with 'spend' by 'channel' and/or 'campaign' by 'spend_tstamp' (which denotes a timestamp field) information
     snowplow__conversion_stitching: false # When true the view events will be joined to the conversion event based on stitched_user_id. Both conversion and view stitching needs to be enabled in the unified model for it to work properly.
     snowplow__conversion_clause: 'cv_value > 0 and ev.user_identifier is not null'
+    snowplow__days_late_allowed: 3 # How many days late a conversion can arrive in the conversions source; each incremental run re-reads conversions from (this + 1) days before the latest processed conversion. If you changed it under snowplow_unified:, set the same value here (this package cannot read that value), or set it to how late a custom conversions source can deliver.
 
     # Variables that change the drop and recompute report tables only
     snowplow__license_accepted: false
