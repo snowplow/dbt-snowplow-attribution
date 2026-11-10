@@ -1,8 +1,25 @@
 snowplow-attribution x.x.x (xxxx-xx-xx)
 ---------------------------------------
 
+## Summary
+Incremental runs of `snowplow_attribution_paths_to_conversion` read much less data. Attribution output may change: paths now include touchpoints on the first day of the path lookback that were previously dropped. No full refresh is required.
+
 ## Fixes
-- Preserve the full calendar-day path lookback on Spark when incremental attribution windows cross daylight-saving changes in non-UTC sessions (#45).
+- Anchor the incremental window on `cv_tstamp` instead of `cv_path_start_tstamp`. The old anchor subtracted `snowplow__path_lookback_days` twice, so every run re-read about 30 days of conversions and 60 days of page views (#45).
+- Start the page view lookback at midnight of the earliest conversion's day, matching the day-based path join on every adapter. Previously, conversions could lose touchpoints from the first day of their lookback when they were last reprocessed, so some paths and attribution values will change (#45).
+- Preserve the full calendar-day path lookback on Spark when incremental windows cross daylight-saving changes in non-UTC sessions (#45).
+
+## Behaviour changes
+- New variable `snowplow__days_late_allowed` (default 3). Each run re-reads conversions from `snowplow__days_late_allowed + 1` days (96h by default) before the latest processed conversion, so conversions that arrive late are still picked up (#45).
+  - **If you changed `snowplow__days_late_allowed` under `snowplow_unified:`, set the same value under `snowplow_attribution:`.** This package cannot read the `snowplow_unified:` value, and there is no warning: if unified's value is higher, conversions arriving later than attribution's value are never processed.
+  - Prefer the `snowplow_attribution:` key. Setting it at the top level of your vars also changes `snowplow_unified`, so only do that when you deliberately want both packages to use the same value.
+  - If you use a custom conversions source, set it to how late that source can deliver conversions.
+- `snowplow__lookback_window_hours` is no longer read by this package (#45).
+- Data older than that window is no longer re-read, rather than the previous (unintended) ~30 days (#45):
+  - user mapping and stitching changes are picked up only for conversions inside the window;
+  - a late page view only reaches its conversion's path if that conversion is inside the window.
+  Older conversions need a full refresh to pick these up.
+- The source check now fails as soon as the conversions source is behind the model, rather than only when it was 30 days behind (#45).
 
 snowplow-attribution 1.0.0 (2026-05-06)
 ---------------------------------------

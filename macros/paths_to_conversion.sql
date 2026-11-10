@@ -22,7 +22,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_tstamp','cv_tstamp',true) %}
 
 {#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
-{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) %}
+{#- Conversions are re-read by cv_tstamp (event time), so cover how late they can arrive, plus one day
+    for the source's load overlap and device clock skew. -#}
+{%- set conversion_lookback_hours = ((var("snowplow__days_late_allowed") | int) + 1) * 24 %}
+{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -conversion_lookback_hours, last_processed_cv_tstamp) %}
 {# Keep the full boundary day: the join uses day differences, and Spark/Databricks select whole conversion dates. #}
 {%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
@@ -218,7 +221,10 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_tstamp','cv_tstamp') %}
 
 {#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
-{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) %}
+{#- Conversions are re-read by cv_tstamp (event time), so cover how late they can arrive, plus one day
+    for the source's load overlap and device clock skew. -#}
+{%- set conversion_lookback_hours = ((var("snowplow__days_late_allowed") | int) + 1) * 24 %}
+{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -conversion_lookback_hours, last_processed_cv_tstamp) %}
 {# Keep the full boundary day to match the day-based path join below. #}
 {%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
