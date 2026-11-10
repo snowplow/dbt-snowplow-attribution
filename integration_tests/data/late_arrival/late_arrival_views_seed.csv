@@ -5,5 +5,7 @@ u_late_2d,2024-03-08 11:00:00,2024-03-08 11:00:00,/,,(direct),,poplindata.com,1
 u_boundary,2024-02-04 23:00:00,2024-02-04 23:00:00,/,spring,adnetwork,display,poplindata.com,1
 u_boundary,2024-02-05 00:30:00,2024-02-05 00:30:00,/,,partner,referral,poplindata.com,1
 u_boundary,2024-03-06 12:30:00,2024-03-06 12:30:00,/,,(direct),,poplindata.com,1
+u_window_day,2024-02-05 01:00:00,2024-02-05 01:00:00,/,,newsletter,email,poplindata.com,1
+u_window_day,2024-03-06 05:00:00,2024-03-06 05:00:00,/,,(direct),,poplindata.com,1
 u_too_late,2024-03-04 10:00:00,2024-03-04 10:00:00,/,spring,google,cpc,poplindata.com,1
 u_new,2024-03-11 08:00:00,2024-03-11 08:00:00,/,spring,google,cpc,poplindata.com,1

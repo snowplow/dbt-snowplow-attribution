@@ -20,6 +20,12 @@ Asserts the state of paths_to_conversion after the late-arrival scenario in inte
       'cv_boundary': 'Referral > Direct',
       'cv_new': 'Paid_Search_Other'
     } %}
+    {#- cv_window_day (2024-03-06 06:00) is before the 96h window start (03-06 12:00), but Spark/Databricks
+        select conversions by whole date (cv_tstamp_date), so there it is processed and its path must keep
+        the touchpoint on the first day of its lookback (02-05 01:00). Elsewhere it is not processed. -#}
+    {% if target.type in ['databricks', 'spark'] %}
+      {% do expected.update({'cv_window_day': 'Email > Direct'}) %}
+    {% endif %}
     {#- Channels come from the integration project's channel_classification (mkt_medium / mkt_source).
         cv_late_2d: arrived 2 days late, must be picked up (it was lost with the 6h window).
         cv_boundary: earliest conversion in the window; its Referral visit sits on the boundary day

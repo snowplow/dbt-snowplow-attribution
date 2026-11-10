@@ -2,5 +2,6 @@ cv_id,event_id,user_identifier,cv_tstamp,cv_type,cv_value,arrives_in_run
 cv_anchor,ev_anchor,u_anchor,2024-03-10 12:00:00,transactions,10,1
 cv_late_2d,ev_late_2d,u_late_2d,2024-03-08 12:00:00,transactions,20,2
 cv_boundary,ev_boundary,u_boundary,2024-03-06 13:00:00,transactions,30,2
+cv_window_day,ev_window_day,u_window_day,2024-03-06 06:00:00,transactions,35,2
 cv_too_late,ev_too_late,u_too_late,2024-03-05 12:00:00,transactions,40,2
 cv_new,ev_new,u_new,2024-03-11 09:00:00,transactions,50,2
