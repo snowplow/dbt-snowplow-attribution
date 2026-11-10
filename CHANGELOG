@@ -1,3 +1,9 @@
+snowplow-attribution x.x.x (xxxx-xx-xx)
+---------------------------------------
+
+## Fixes
+- Preserve the full calendar-day path lookback on Spark when incremental attribution windows cross daylight-saving changes in non-UTC sessions (#45).
+
 snowplow-attribution 1.0.0 (2026-05-06)
 ---------------------------------------
 ## Summary
