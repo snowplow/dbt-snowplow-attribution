@@ -71,7 +71,8 @@ models:
     +materialized: table
     +persist_docs:
       relation: true
-      columns: true
+      # Spark/PyHive and Databricks currently fail on column-comment DDL.
+      columns: "{{ (target.type not in ['spark', 'databricks']) | as_bool }}"
     manifest:
       +schema: "snowplow_manifest"
       +persist_docs:

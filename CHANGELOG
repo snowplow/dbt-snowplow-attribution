@@ -21,6 +21,11 @@ Incremental runs of `snowplow_attribution_paths_to_conversion` read much less da
   Older conversions need a full refresh to pick these up.
 - The source check now fails as soon as the conversions source is behind the model, rather than only when it was 30 days behind (#45).
 
+## Under the hood
+- Persist relation documentation for derived tables. Persist column documentation on Snowflake, BigQuery, and Redshift; keep it disabled on Spark and Databricks while their column-comment DDL failures remain unresolved (#44).
+- Run integration tests against the package's documentation settings, without a separate CI override.
+- Update Snowflake CI authentication, Spark image downloads, and bounded failure diagnostics (#45).
+
 snowplow-attribution 1.0.0 (2026-05-06)
 ---------------------------------------
 ## Summary

@@ -40,11 +40,6 @@ models:
     users:
       +enabled: false
   snowplow_attribution:
-    # CI only: Spark/PyHive fails fetching column-comment results; Databricks can report TABLE_OR_VIEW_NOT_FOUND.
-    # Keep relation comments and other adapters' column comments covered.
-    +persist_docs:
-      relation: true
-      columns: "{{ (target.type not in ['spark', 'databricks']) | as_bool }}"
     optional_reporting:
       +enabled: true
 
