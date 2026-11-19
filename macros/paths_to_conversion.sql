@@ -19,7 +19,15 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro default__paths_to_conversion() %}
 
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_path_start_tstamp','cv_path_start_tstamp',true) %}
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_tstamp','cv_tstamp',true) %}
+
+{#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
+{#- Conversions are re-read by cv_tstamp (event time), so cover how late they can arrive, plus one day
+    for the source's load overlap and device clock skew. -#}
+{%- set conversion_lookback_hours = ((var("snowplow__days_late_allowed") | int) + 1) * 24 %}
+{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -conversion_lookback_hours, last_processed_cv_tstamp) %}
+{# Keep the full boundary day: the join uses day differences, and Spark/Databricks select whole conversion dates. #}
+{%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
   with paths as (
     
@@ -52,7 +60,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     and p.user_identifier is not null
 
     {% if is_incremental() %}
-        and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
+        and derived_tstamp >= {{ earliest_path_tstamp }}
     {% endif %}
 
     {% if var('snowplow__conversion_hosts') %}
@@ -97,11 +105,11 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
     {% if is_incremental() %}
       {% if target.type in ['databricks', 'spark'] -%}
-        and cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }})
+        and cv_tstamp_date >= date({{ earliest_cv_in_run }})
       {% else %}
-        and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
+        and cv_tstamp >= {{ earliest_cv_in_run }}
       {% endif %}
-    {% endif %} 
+    {% endif %}
 
   )
 
@@ -210,7 +218,15 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 
 {% macro redshift__paths_to_conversion() %}
 
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_path_start_tstamp','cv_path_start_tstamp') %}
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_tstamp','cv_tstamp') %}
+
+{#- Oldest conversion this run selects; the path floor is measured from here, not the anchor. -#}
+{#- Conversions are re-read by cv_tstamp (event time), so cover how late they can arrive, plus one day
+    for the source's load overlap and device clock skew. -#}
+{%- set conversion_lookback_hours = ((var("snowplow__days_late_allowed") | int) + 1) * 24 %}
+{%- set earliest_cv_in_run = snowplow_utils.timestamp_add('hour', -conversion_lookback_hours, last_processed_cv_tstamp) %}
+{# Keep the full boundary day to match the day-based path join below. #}
+{%- set earliest_path_tstamp = snowplow_attribution.get_path_lookback_start(earliest_cv_in_run, var("snowplow__path_lookback_days", 30)) %}
 
   with paths as (
     
@@ -243,7 +259,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     and p.user_identifier is not null
 
     {% if is_incremental() %}
-      and derived_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
+      and derived_tstamp >= {{ earliest_path_tstamp }}
     {% endif %}
 
     {% if var('snowplow__conversion_hosts') != [] %}
@@ -285,8 +301,8 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
     where {{ var('snowplow__conversion_clause') }} 
 
     {% if is_incremental() %}
-      and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
-    {% endif %} 
+      and cv_tstamp >= {{ earliest_cv_in_run }}
+    {% endif %}
 
   )
 

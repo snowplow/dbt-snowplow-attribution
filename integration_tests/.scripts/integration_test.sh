@@ -24,6 +24,9 @@ fi
 
 for db in ${DATABASES[@]}; do
 
+  echo "Snowplow Attribution integration tests: Path lookback boundaries"
+  dbt run-operation test_path_lookback_start --target "$db" || exit 1;
+
   echo "Snowplow Attribution integration tests: Seeding data"
 
   eval "dbt seed --full-refresh --target $db" || exit 1;
@@ -71,6 +74,18 @@ for db in ${DATABASES[@]}; do
   echo "Snowplow Attribution integration tests: Test models"
 
   eval "dbt test --exclude snowplow_unified  --target $db" || exit 1;
+
+  # Runs last: it rebuilds paths_to_conversion from small controlled sources, replacing the table tested above.
+  echo "Snowplow Attribution integration tests: Late-arriving conversions - run 1/2 (full refresh)"
+
+  eval "dbt run --select late_arrival_conversions --vars '{snowplow__late_arrival_run: 1}' --target $db" || exit 1;
+  eval "dbt run --select snowplow_attribution_paths_to_conversion --full-refresh --vars '{snowplow__allow_refresh: true, snowplow__late_arrival_test: true}' --target $db" || exit 1;
+
+  echo "Snowplow Attribution integration tests: Late-arriving conversions - run 2/2 (incremental)"
+
+  eval "dbt run --select late_arrival_conversions --vars '{snowplow__late_arrival_run: 2}' --target $db" || exit 1;
+  eval "dbt run --select snowplow_attribution_paths_to_conversion --vars '{snowplow__late_arrival_test: true}' --target $db" || exit 1;
+  eval "dbt run-operation test_late_arrival_paths --vars '{snowplow__late_arrival_test: true}' --target $db" || exit 1;
 
   echo "Snowplow Attribution integration tests: All tests passed"
 
