@@ -1,4 +1,4 @@
-snowplow-attribution x.x.x (xxxx-xx-xx)
+snowplow-attribution 1.0.1 (2026-11-19)
 ---------------------------------------
 
 ## Summary
@@ -25,6 +25,9 @@ Incremental runs of `snowplow_attribution_paths_to_conversion` read much less da
 - Persist relation documentation for derived tables. Persist column documentation on Snowflake, BigQuery, and Redshift; keep it disabled on Spark and Databricks while their column-comment DDL failures remain unresolved (#44).
 - Run integration tests against the package's documentation settings, without a separate CI override.
 - Update Snowflake CI authentication, Spark image downloads, and bounded failure diagnostics (#45).
+
+## Upgrading
+Update the `snowplow/snowplow_attribution` version in `packages.yml` and run `dbt deps`. No full refresh is required to continue incremental runs. Review `snowplow__days_late_allowed` before upgrading, especially if you customized it in Unified or use a custom conversions source. To recompute older conversion paths outside the new window, use a full refresh only when your source tables retain the required conversion and path history.
 
 snowplow-attribution 1.0.0 (2026-05-06)
 ---------------------------------------
