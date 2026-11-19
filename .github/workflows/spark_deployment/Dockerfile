@@ -10,7 +10,7 @@ ENV AWS_SDK_VERSION=1.12.581
 RUN apt-get update && apt-get install -y curl wget procps rsync ssh
 
 # Download and install Spark
-RUN wget https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
     tar -xvzf spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop3 /spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.tgz

@@ -42,7 +42,7 @@ env:
   # Snowflake Connection
   SNOWFLAKE_TEST_ACCOUNT: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT }}
   SNOWFLAKE_TEST_USER: ${{ secrets.SNOWFLAKE_TEST_USER }}
-  SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
+  SNOWFLAKE_TEST_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_TEST_PRIVATE_KEY }}
   SNOWFLAKE_TEST_ROLE: ${{ secrets.SNOWFLAKE_TEST_ROLE }}
   SNOWFLAKE_TEST_DATABASE: ${{ secrets.SNOWFLAKE_TEST_DATABASE }}
   SNOWFLAKE_TEST_WAREHOUSE: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE }}
@@ -153,3 +153,54 @@ jobs:
       - name: "Post-test: Drop ci schemas"
         run: |
           dbt run-operation post_ci_cleanup --target ${{matrix.warehouse}}
+
+      - name: dbt logs on failure
+        if: ${{ failure() }}
+        run: |
+          python - <<'PY'
+          from collections import deque
+          import json
+          import os
+          from pathlib import Path
+
+          log = Path('logs/dbt.log')
+          if not log.exists():
+              print('No dbt log was created.')
+          else:
+              tail = deque(maxlen=300)
+              query_errors = deque(maxlen=2)
+              capturing_query = False
+              with log.open(errors='replace') as stream:
+                  for line in stream:
+                      tail.append(line)
+                      if 'Databricks adapter: Exception while trying to execute query' in line:
+                          query_errors.append([line])
+                          capturing_query = True
+                      elif capturing_query:
+                          if line.startswith('Error properties:') or len(query_errors[-1]) >= 100:
+                              capturing_query = False
+                          else:
+                              query_errors[-1].append(line)
+              if query_errors:
+                  content = ''.join(line for block in query_errors for line in block)
+                  content += '\nLast 100 dbt log lines:\n' + ''.join(list(tail)[-100:])
+              else:
+                  content = ''.join(tail)
+              values = set()
+              for name, value in os.environ.items():
+                  if value and (name.startswith(('SNOWFLAKE_', 'DATABRICKS_', 'BIGQUERY_', 'REDSHIFT_', 'POSTGRES_'))
+                                or name in ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN')):
+                      values.update((value, json.dumps(value)[1:-1]))
+                      values.update(value.splitlines())
+              for value in sorted(values, key=len, reverse=True):
+                  if value:
+                      content = content.replace(value, '***')
+              print(content, end='')
+          PY
+
+      - name: Spark logs on failure
+        if: ${{ failure() && env.WAREHOUSE_PLATFORM == 'spark' }}
+        working-directory: .github/workflows/spark_deployment
+        run: |
+          docker compose ps
+          docker compose logs --no-color --tail=200
